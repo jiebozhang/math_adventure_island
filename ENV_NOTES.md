@@ -101,6 +101,18 @@ cd "/c/Users/zhang/PycharmProjects/PythonProject/数学冒险岛"
 # 只跑 lint
 ./gradlew :app:lintDebug
 # 报告：app/build/reports/lint-results-debug.html
+
+# git 工作流：每个 diff 前先 commit 当前状态，改完再单独 commit
+git status
+git add -A
+git commit -m "改动说明"
+
+# 发布 GitHub Release（gh 不在 PATH，用完整路径，见第 6 节）
+GH="/d/Program Files/GitHub CLI/gh.exe"
+"$GH" release create vX.Y.Z app/build/outputs/apk/debug/app-debug.apk \
+  --repo jiebozhang/math_adventure_island \
+  --title "数学冒险岛 vX.Y.Z" \
+  --notes "测试版本，使用debug签名，仅供内部测试安装。"
 ```
 
 不加 `--console=plain` 时输出带彩色进度；需要干净日志可加。构建正常约 30s（配置缓存复用）。
@@ -117,5 +129,46 @@ cd "/c/Users/zhang/PycharmProjects/PythonProject/数学冒险岛"
   - 本会话未遇到任何被拒绝访问的域名；若将来出现"无法访问仓库"，优先怀疑网络而非域名白名单。
 - **Robolectric / Roborazzi 截图测试在本机跑不动**：test worker 会崩（`ClassNotFoundException` 类错误），`testDebugUnitTest` 不可用作验证手段。**UI 验证一律走"打 APK → 真机装"**。
 - **Secrets 插件**依赖项目根目录 `.env` / `.env.example`；`google-services.json` 缺失时是 WARN 透传，不阻塞构建。
-- 项目**不是 git 仓库**，没有版本管理可依赖；改动前先备份/记录原始代码。
+- 项目**已初始化 git**（2026-08-16），远程 GitHub `jiebozhang/math_adventure_island`，默认分支 main。**约定：每个 diff 前先 commit 当前状态，改完再单独 commit**，让 `git log -p` / `git diff` 始终可信。详见第 6 节。
+- **gh CLI 不在 PATH**：装在 `D:\Program Files\GitHub CLI\gh.exe`，要用完整路径调用，或先 `export PATH="/d/Program Files/GitHub CLI:$PATH"`。
+- **winget 未安装**（bash 与 cmd 均确认）：以后装新工具不能走 winget 路线。
 - 系统默认 JDK 是 8，**任何新开的终端都必须重新指定 JDK 21**（环境变量不跨会话保留）。
+
+---
+
+## 6. GitHub 远程仓库与 gh CLI
+
+（2026-08-16 实测）
+
+| 项 | 值 |
+|---|---|
+| 远程仓库 | `https://github.com/jiebozhang/math_adventure_island.git`（origin） |
+| 默认分支 | `main` |
+| 首个 commit | `2aff821` 初始快照：ENV_NOTES.md写入后的当前状态 |
+| **gh CLI 路径** | `D:\Program Files\GitHub CLI\gh.exe`（**不在 PATH**，必须用完整路径） |
+| gh 版本 | 2.97.0 |
+| 登录账号 | `jiebozhang`（token 在系统 keyring，不在 hosts.yml 明文里） |
+| token scopes | `gist, read:org, repo, workflow` |
+| 已有 Release | `v0.1.0`（附 `app-debug.apk` 24M，debug 签名测试版） |
+
+**gh 用法（完整路径）：**
+```bash
+GH="/d/Program Files/GitHub CLI/gh.exe"
+
+# 检查登录状态
+"$GH" auth status
+
+# 查看某个 Release
+"$GH" release view v0.1.0 --repo jiebozhang/math_adventure_island
+
+# 创建 Release（先确认版本号无冲突；有冲突就停下报告，不要改版本号或强制覆盖）
+"$GH" release create vX.Y.Z app/build/outputs/apk/debug/app-debug.apk \
+  --repo jiebozhang/math_adventure_island \
+  --title "数学冒险岛 vX.Y.Z" \
+  --notes "测试版本，使用debug签名，仅供内部测试安装。"
+```
+
+**注意事项：**
+- 历史覆盖方式：本地为准，force push 覆盖远程 main（远程旧历史不要）。推送前用 `git ls-files` 复核，确保 `debug.keystore`、`.env`、`local.properties` 等敏感文件没被带上（`.gitignore` 已挡，仍应每次复核）。
+- 发新版 Release 前先重编 APK（第 4 节 `assembleDebug`），产物固定路径 `app/build/outputs/apk/debug/app-debug.apk`。
+- 发布的是 **debug 版 APK**（debug keystore 签名），notes 必须标注"测试版本，仅供内部测试"。
