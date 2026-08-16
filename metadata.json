@@ -1,0 +1,6 @@
+{
+  "name": "数学冒险岛",
+  "description": "面向小学1-3年级学生的数学冒险学习应用，结合七步解题法、错题怪兽图鉴、粗心训练营与AI智能辅导",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
