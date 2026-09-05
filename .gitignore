@@ -25,3 +25,7 @@ outputs/
 # Logs
 *.log
 logs/
+
+# 本地环境速查（含本地路径/配置，不进仓库）
+ENV_NOTES.md
+UI_DESIGN/ENV_NOTES.md

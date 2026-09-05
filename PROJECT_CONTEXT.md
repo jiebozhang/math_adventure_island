@@ -16,7 +16,7 @@
 
 ## 二、技术栈与关键文件
 
-### Android 端（本工程 `D:\Math_Adventure_Island_android`）
+### Android 端（本工程，根目录见实际检出路径）
 - **语言/框架**：Kotlin 2.2.10 + Jetpack Compose（BOM 2024.09.00 / material3 1.3.0），单 Activity + 状态路由（`when` 分支，**非** Navigation Compose）
 - **架构**：Clean Architecture（Presentation=UI+ViewModel / Domain / Data）
 - **网络/同步**：OkHttp + Retrofit + Moshi，**直调 Supabase PostgREST**（贴近 PC 端 `sync_manager.py`，**不引入 supabase-kt**）
@@ -37,7 +37,7 @@
 | 尺寸适配（平板/横屏） | `ui/theme/Dimens.kt`（DimensImpl/CompactDimens/TabletDimens/LocalDimens） |
 
 ### PC 桌面版（对照参考）
-- 路径：`C:\Users\zhang\PycharmProjects\PythonProject\Math_Adventure_Island`
+- 路径：`（PC 桌面版独立工程，本地检出路径为准，不硬编码进仓库）`
 - 三文件：`math_adventure_island_v15.py`(入口) / `v15_data.py`(题库) / `v15_views.py`(视图)；同步 `sync_manager.py`
 - Android 抄作业时去读的 PC 端函数见「四、跨分支同步状态」
 

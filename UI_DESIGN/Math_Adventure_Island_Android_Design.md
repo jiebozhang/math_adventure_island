@@ -2,7 +2,23 @@
 
 > 版本：v1.0 · 日期：2026-09-04
 > 源项目：PyQt5 桌面版《数学冒险岛》v14 + v15 数据层 + v15 视图层
-> 目标平台：Android 8.0+（minSdkVersion 26，targetSdkVersion 34）
+> 目标平台：Android 7.0+（minSdk 24，targetSdk 36）
+
+> ⚠️ 本文件为 2026-09-04 设计稿，部分技术假设已与实际实现不符，以 `PROJECT_CONTEXT.md` 为准；实现状态见「0. 当前实现状态」。
+
+---
+
+## 0. 当前实现状态（截至 2026-09-05，权威源见 PROJECT_CONTEXT.md）
+
+本设计稿写于 2026-09-04 重建之初，以下为实际落地情况，**与本文档假设有出入处以本段为准**：
+
+- **技术栈已定**：Kotlin 2.2.10 + Jetpack Compose（BOM 2024.09.00 / material3 1.3.0）；单 Activity + `when` 状态路由（**非** Navigation Compose）；OkHttp + Retrofit + Moshi 直调 Supabase PostgREST（**不引入 supabase-kt**）；Room v3 本地缓存；AI 走 `GeminiHelper`（纯 HttpURLConnection，实际接 DeepSeek OpenAI 兼容通道）。
+- **SDK**：minSdk **24**（Android 7.0）、targetSdk **36**、compileSdk 36（设计稿原写 26/34，已修正）。
+- **导航**：4 个一级 Tab（冒险 / 图鉴 / 日记 / 家长）已实现，与本文 §2 描述一致。
+- **七步 AI 校验闭环 + AI 失败降级**：已实现（软步骤 AI 失败直接放行；硬步骤 FORMULA 本地判不出给"重试 / 先跳过"两条出路）。
+- **v15 题库**：60 关 / 113 题 / 6 思想 / 4 领域已接入（`V15Data.kt`，由 `scripts/gen_v15_data.py` 自动转换）。
+- **发布**：GitHub `jiebozhang/math_adventure_island`，Release **v0.2.0**（2026-09-05，debug 签名测试版，含上述修复）。
+- **已知待真机验证**：Supabase 云同步、平板 / 横屏适配、FORMULA 链路仍含一处正则（设备未验证）。
 
 ---
 
@@ -321,7 +337,7 @@
 │   · LlmRepository（智谱/豆包网关）                │
 ├─────────────────────────────────────────────────┤
 │ Platform（Android SDK / 第三方）                  │
-│   · Jetpack Compose + Navigation                 │
+│   · Jetpack Compose + 状态路由（单 Activity + when 分支，非 Navigation Compose） │
 │   · Room / DataStore / WorkManager               │
 │   · Hilt（依赖注入）                              │
 │   · Retrofit + OkHttp（HTTP）                    │
@@ -330,7 +346,7 @@
 
 ### 3.2 页面导航结构
 
-单 Activity + Compose Navigation，4 个一级 Tab + 9 个二级页：
+单 Activity + 状态路由（when 分支，非 Navigation Compose），4 个一级 Tab + 9 个二级页（已实现 4 Tab 底部导航：冒险/图鉴/日记/家长）：
 
 ```
 MainActivity (NavHost)

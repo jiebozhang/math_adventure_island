@@ -1,7 +1,7 @@
 # 数学冒险岛 · PC(PyQt5) → Android(Kotlin+Compose) 迁移指南
 
 > 适用对象：把桌面端 PyQt5/Python 版「数学冒险岛」完整迁移到 Android App。
-> 参考基线：当前 Android 工程 `app/` 已完成的 V3 Supabase 同步层、Room v3、Compose UI、Coil-SVG、Supabase-Kt 客户端（详见 `codex_prompt_android_V3.md`）。
+> 参考基线：当前 Android 工程 `app/` 是 2026-09-04 从零重建的 Kotlin + Jetpack Compose 工程——OkHttp + Retrofit 直调 Supabase PostgREST（**不引入 supabase-kt**）、Room v3 本地缓存、单 Activity + `when` 状态路由（**非** Navigation Compose）、Coil-SVG。权威事实见 `PROJECT_CONTEXT.md`（无 `codex_prompt_android_V3.md`）。
 > PC 端参考：v15 三文件——`math_adventure_island_v15.py`(入口) / `v15_data.py`(题库 1469 行 KNOWLEDGE_MAP+QUESTION_BANK) / `v15_views.py`(PyQt5 视图 1700 行) / `v15_bridge.py`(数据桥接)；同步逻辑 `sync_manager.py`(requests + threading.Event + QSettings + RotatingFileHandler，原子写 JSON tmp+rename)。
 
 ---
@@ -80,7 +80,7 @@ PC v15 的 `QUESTION_BANK` 是 Python 字典列表，跟云端 `questions` 表�
 | `androidx.core:core-ktx` | KTX 扩展 |
 | `androidx.lifecycle:lifecycle-viewmodel-compose` | Compose + ViewModel 绑定 |
 | `androidx.activity:activity-compose` | Compose Activity 容器 |
-| `androidx.navigation:navigation-compose` | 页面路由（替代 PyQt `QStackedWidget`） |
+| 单 Activity + when 状态路由（未引入 navigation-compose） | 页面路由（替代 PyQt `QStackedWidget`） |
 | `androidx.room:*` | 本地数据库 |
 | `io.coil-kt:coil-compose` + `coil-svg` | 图片加载，**SVG 必须装 coil-svg** |
 | `org.jetbrains.kotlinx:kotlinx-coroutines-android` | 协程 |
@@ -221,7 +221,7 @@ PC 端 `self.thread = QThread()` 然后忘了 quit 的事，App 端同样会爆�
 
 ## 5. UI 适配（WorkBuddy 创意设计模式：先重设计，再翻译代码）
 
-> **WorkBuddy 设计哲学**（已经在 Android V3 里贯彻）：
+> **WorkBuddy 设计哲学**（已经在 Android 工程里贯彻）：
 > **「资源化的先于提问 / 有观点 / 用能力换信任 / 灵魂&记忆的连续性」**——落到 UI 上就是：**不照搬 PC 的版面，把信息按"孩子一低头就懂"重新打散**，**让孩子的主流程最短**（看题 → 答 → 看反馈 → 下一题），**让家长控制台在"功能完整但孩子够不着"那侧**。
 
 ### 5.1 PC 端 UI 现状（v15_views.py 简述）
@@ -372,14 +372,14 @@ PC 端程序自己退就行。Android 上：
 
 ### 7.3 题库图片持久化（PC 是硬盘静态文件，App 要跟随 App 生命周期）
 
-- **打包时塞 APK**（Android 已有 V3 的 `assets/star_grade3/`）→ 用 `file:///android_asset/...` 引用（Coil 支持）
+- **打包时塞 APK**（Android 工程已自带 `assets/star_grade3/`）→ 用 `file:///android_asset/...` 引用（Coil 支持）
 - **下载到本地缓存** → `context.cacheDir/questions/<id>.svg`
 - **从云端拉** → Coil 内部 diskCache 帮你存一份（按 URL key），**别自己写文件管理**
 - **导出/分享** → MediaStore.Images，让用户相册能看见
 
 ### 7.4 同步层（Supabase）现状 & 隐患
 
-PC 端 `sync_manager.py` 这套已经验证能跑，Android 这边 V3 已经做了对应实现：
+PC 端 `sync_manager.py` 这套已经验证能跑，Android 这边已做了对应实现（OkHttp + Retrofit 直调 PostgREST，非 supabase-kt）：
 
 - ✅ 登录（`/auth/v1/token`）+ token 刷新
 - ✅ 题库增量拉取（`updated_at=gt.`）
@@ -450,8 +450,8 @@ PC 端 `sync_manager.py` 这套已经验证能跑，Android 这边 V3 已经做�
 
 ### Phase 2：脚手架（1 周）
 
-- [ ] 用 `Empty Compose Activity` 模板建项目，`minSdk=24` `targetSdk=34`
-- [ ] 接 Supabase-Kt（不行退化到 Retrofit + OkHttp 直调 PostgREST）
+- [ ] 用 `Empty Compose Activity` 模板建项目，`minSdk=24` `targetSdk=36`
+- [ ] 直接用 Retrofit + OkHttp 直调 Supabase PostgREST（不引入 supabase-kt）
 - [ ] 建 `local.properties` 注入 `SUPABASE_URL` + `SUPABASE_ANON_KEY`（不入 git）
 - [ ] 接 Room v3 + DataStore + EncryptedSharedPreferences
 - [ ] 配协程 `viewModelScope`/`Dispatchers.IO`/`Dispatchers.Default`
