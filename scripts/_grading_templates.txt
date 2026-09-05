@@ -1,0 +1,310 @@
+/**
+ * 七步 AI 批改：统一 JSON 契约 + 5 套 Prompt 模板 + 本地规则
+ * 依据：《数学冒险岛_Android七步AI校验完整方案.md》
+ *
+ * 硬性约束（写进每条 system prompt）：
+ * - 只输出一个 JSON 对象，无前后缀文字、无 markdown 代码块
+ * - hint 绝不能直接说出正确答案或缺失内容
+ * - 每项不超过 20 字
+ */
+private val GRADE_JSON_SPEC = """
+    只输出JSON：{"correct": true或false, "feedback": "...", "hint": "...", "suggestion": "..."}，
+    不要输出其他文字。feedback/hint/suggestion 每项不超过20字。
+""".trimIndent()
+
+/** 判题必须用低温度，避免同一答案多次判定不一致 */
+private const val GRADE_TEMPERATURE = 0.0
+
+// ── Step1：读题（费曼复述，多轮，宽松判定）──
+suspend fun gradeReadStep(
+    settings: UserSettings,
+    questionText: String,
+    imageDesc: String,
+    priorPairs: List<Pair<String?, String>>,
+    latestAnswer: String,
+    turnCount: Int,
+    maxTurns: Int
+): StepGradeResult {
+    val systemPrompt = """
+        你是一位温柔耐心的小学数学老师，正在和一个1-3年级的孩子对话。
+        孩子正在用自己的话复述一道数学题的意思。评判标准要宽松，
+        只要抓住"已知了什么、要求什么"的大意就算理解，不要吹毛求疵。
+
+        如果孩子的复述体现了正确的大意（哪怕不完整但没有明显错误）：
+        correct设为true，feedback给一句简短表扬（不超过15字）。
+
+        如果有明显遗漏（比如完全没提到某个已知条件，或说反了要求什么）：
+        correct设为false，feedback留空，
+        hint提出一个具体的追问方向，引导孩子注意到遗漏的部分
+        （例如"你提到了第一排密码，那第二排呢？"），
+        绝不能直接告诉孩子漏掉的具体数字或条件内容，
+        suggestion给一句鼓励性的方法建议（比如"可以把题目再读一遍，圈出数字"）。
+
+        如果已经是最后一轮（第${maxTurns}轮），hint可以稍微给多一点提示方向，
+        但依然不能直接说出条件或答案。
+
+        $GRADE_JSON_SPEC
+    """.trimIndent()
+
+    val historyArr = JSONArray()
+    for ((aiQ, stA) in priorPairs) {
+        historyArr.put(JSONObject().apply {
+            put("AI之前问的", aiQ ?: "（开场：用自己的话说说这道题在讲什么）")
+            put("孩子当时的回答", stA)
+        })
+    }
+    val userMessage = JSONObject().apply {
+        put("题目", questionText)
+        put("图片内容描述", imageDesc.ifBlank { "无图片" })
+        put("此前已经问过、孩子没答对的追问记录", historyArr)
+        put("孩子本轮最新的回答", latestAnswer)
+        put("当前轮次", "第${turnCount}轮，最多${maxTurns}轮")
+    }.toString()
+
+    return callGrading(settings, systemPrompt, userMessage)
+}
+
+// ── Step2：找条件（对照标准条件，客观校验）──
+suspend fun gradeConditionsStep(
+    settings: UserSettings,
+    questionText: String,
+    imageDesc: String,
+    referenceConditions: String,
+    userInput: String,
+    attemptCount: Int = 1
+): StepGradeResult {
+    val systemPrompt = """
+        你是一位耐心的小学数学老师，正在批改孩子"找已知条件"这一步。
+
+        请判断孩子是否找全、找对了题目里的已知条件（允许表达方式不同，
+        比如"358"和"第一排密码是358"视为等价；顺序不重要）。
+        不要求逐字一致，但不能漏掉关键数字或条件，也不能凭空编造题目里没有的条件。
+
+        如果找全找对了：correct设为true，feedback给一句简短鼓励（不超过15字）。
+
+        如果遗漏或找错了：correct设为false，feedback留空，
+        hint指出"大概漏了哪一类信息"（比如"题目里是不是还提到了另一个数？"），
+        绝不能直接说出遗漏的具体数字，
+        suggestion给一句方法建议（比如"把题目里出现的每个数字都圈出来看看"）。
+
+        这是孩子第${attemptCount}次尝试，${if (attemptCount >= 2) "可以给稍多一点的提示方向，但仍不能直接说出具体数字。" else "提示要含蓄，只指方向。"}
+
+        $GRADE_JSON_SPEC
+    """.trimIndent()
+
+    val userMessage = JSONObject().apply {
+        put("题目", questionText)
+        put("图片内容描述", imageDesc.ifBlank { "无图片" })
+        put("标准的已知条件", referenceConditions.ifBlank { "（题库未提供，请按题目内容自行判断）" })
+        put("孩子写下的已知条件", userInput)
+    }.toString()
+
+    return callGrading(settings, systemPrompt, userMessage)
+}
+
+// ── Step3：找问题（对照标准问题，客观校验）──
+suspend fun gradeQuestionStep(
+    settings: UserSettings,
+    questionText: String,
+    referenceQuestion: String,
+    userInput: String,
+    attemptCount: Int = 1
+): StepGradeResult {
+    val systemPrompt = """
+        你是一位耐心的小学数学老师，正在批改孩子"找出题目要求什么"这一步。
+
+        请判断孩子是否准确抓住了题目最终要求什么（允许表达方式不同，
+        比如"一共多少"和"两个加起来是几"视为等价）。
+
+        如果抓对了：correct设为true，feedback给一句简短鼓励（不超过15字）。
+
+        如果理解错了或说的是别的东西：correct设为false，feedback留空，
+        hint引导孩子重新关注题目最后一句话（比如"再读一下题目最后一句，问的是谁的数量？"），
+        绝不能直接说出正确的问题是什么，
+        suggestion给一句方法建议（比如"通常问句会带'一共''还剩''多少'这些词，找找看"）。
+
+        这是孩子第${attemptCount}次尝试。
+
+        $GRADE_JSON_SPEC
+    """.trimIndent()
+
+    val userMessage = JSONObject().apply {
+        put("题目", questionText)
+        put("标准的问题（题目要求求什么）", referenceQuestion.ifBlank { "（题库未提供，请按题目最后一句判断）" })
+        put("孩子写下的理解", userInput)
+    }.toString()
+
+    return callGrading(settings, systemPrompt, userMessage)
+}
+
+// ── Step4：选方法（多轮，只校验"有没有说理由"，不校验方法本身）──
+suspend fun gradeMethodStep(
+    settings: UserSettings,
+    questionText: String,
+    coreConcept: String,
+    priorPairs: List<Pair<String?, String>>,
+    latestAnswer: String,
+    turnCount: Int,
+    maxTurns: Int
+): StepGradeResult {
+    val systemPrompt = """
+        你是一位温柔耐心的小学数学老师。孩子正在说他打算用什么方法解决这道题
+        （比如加法、减法、乘法、除法，或者更具体的思路）。
+
+        你的任务不是判断"方法对不对"（后面列算式那一步会验证结果是否正确），
+        而是判断孩子有没有说出"为什么"——哪怕只是很朴素的理由，
+        比如"因为要把两个数合起来"，也算通过。只要不是完全说不出理由，
+        或者理由和题目明显不相关，就应该判定通过。
+
+        如果说出了理由（哪怕朴素）：correct设为true，feedback给一句简短鼓励（不超过15字）。
+
+        如果完全说不出理由或者只说了方法名没说为什么：correct设为false，feedback留空，
+        hint用一个具体的问题引导孩子说出理由（比如"为什么你觉得要用加法呢？"），
+        suggestion给一句提示（比如"想想这个知识点：$coreConcept"）。
+
+        这是第${turnCount}轮，最多${maxTurns}轮。
+
+        $GRADE_JSON_SPEC
+    """.trimIndent()
+
+    val historyArr = JSONArray()
+    for ((aiQ, stA) in priorPairs) {
+        historyArr.put(JSONObject().apply {
+            put("AI之前问的", aiQ ?: "（开场：你打算用哪种方法？为什么？）")
+            put("孩子当时的回答", stA)
+        })
+    }
+    val userMessage = JSONObject().apply {
+        put("题目", questionText)
+        put("这个知识点的核心概念", coreConcept.ifBlank { "无" })
+        put("此前已经问过、孩子没答对的追问记录", historyArr)
+        put("孩子本轮最新的回答", latestAnswer)
+    }.toString()
+
+    return callGrading(settings, systemPrompt, userMessage)
+}
+
+// ── Step5：列算式（本地规则判不出来才调，判"对"完全不需要 AI）──
+suspend fun gradeFormulaStep(
+    settings: UserSettings,
+    questionText: String,
+    imageDesc: String,
+    correctAnswer: String,
+    userAnswer: String,
+    attemptCount: Int = 1
+): StepGradeResult {
+    val systemPrompt = """
+        你是一位耐心的小学数学老师，正在批改孩子的列式作答。
+
+        允许孩子写过程、单位、不同的表达形式（比如"12"和"十二"视为等价），
+        但最终数值结果必须与标准答案完全一致，不能因为"孩子写了过程"或"态度认真"
+        就放宽正确性标准。如果图片内容描述不是"无图片"，说明这是看图题，请结合它判断。
+
+        如果正确：correct设为true，feedback给一句简短鼓励（不超过15字），
+        hint和suggestion都留空字符串。
+
+        如果不正确：correct设为false，feedback留空字符串，
+        hint是一句引导性提示，帮孩子发现自己哪里可能算错了
+        （绝不能直接说出正确答案或最终数值），
+        suggestion是一句具体可操作的学习建议
+        （比如"试着列竖式算一遍""用画图法数一数""检查一下有没有进位"）。
+
+        这是孩子第${attemptCount}次尝试，${if (attemptCount >= 3) "已经有些受挫，提示可以给到接近答案，语气更温和，但仍不要直接说出最终数值。" else ""}
+
+        $GRADE_JSON_SPEC
+    """.trimIndent()
+
+    val userMessage = JSONObject().apply {
+        put("题目", questionText)
+        put("图片内容描述", imageDesc.ifBlank { "无图片" })
+        put("标准答案", correctAnswer)
+        put("孩子的作答", userAnswer)
+    }.toString()
+
+    return callGrading(settings, systemPrompt, userMessage)
+}
+
+// ── Step7：总结（可选，轻量鼓励语，纯文本不判对错）──
+suspend fun generateSummaryPraise(
+    settings: UserSettings,
+    questionText: String,
+    method: String
+): String {
+    val systemPrompt = """
+        你是一位温柔耐心的小学数学老师。孩子刚刚独立做对了一道题。
+        请给他一句简短、具体、有针对性的鼓励语（不超过20字），
+        不要泛泛而谈"你真棒"，尽量提到他这道题具体做得好的地方。
+        只输出这句话本身，不要输出其他文字，不要输出JSON。
+    """.trimIndent()
+    val userMessage = JSONObject().apply {
+        put("题目", questionText)
+        put("用的方法", method.ifBlank { "认真思考" })
+    }.toString()
+    return try {
+        callLlmApi(settings, systemPrompt, userMessage, 0.7).trim()
+    } catch (e: Exception) {
+        Log.e(TAG, "generateSummaryPraise failed", e)
+        ""
+    }
+}
+
+/** 统一的批改调用 + JSON 容错解析（解析失败默认判"错"，绝不误判为对） */
+private suspend fun callGrading(
+    settings: UserSettings,
+    systemPrompt: String,
+    userMessage: String
+): StepGradeResult {
+    val raw = callLlmApi(settings, systemPrompt, userMessage, GRADE_TEMPERATURE)
+    // AI 偶尔夹带闲聊或 markdown 代码块，先正则提取最外层 {...}
+    val jsonText = Regex("\\{[\\s\\S]*}").find(raw)?.value
+        ?: return StepGradeResult(correct = false, hint = "AI返回格式异常，请重新提交")
+    return try {
+        val obj = JSONObject(jsonText)
+        StepGradeResult(
+            correct = obj.optBoolean("correct", false),
+            feedback = obj.optString("feedback", ""),
+            hint = obj.optString("hint", ""),
+            suggestion = obj.optString("suggestion", "")
+        )
+    } catch (e: Exception) {
+        Log.e(TAG, "parseGradeJson failed: $raw", e)
+        StepGradeResult(correct = false, hint = "AI返回格式异常，请重新提交")
+    }
+}
+
+/**
+ * Step5 本地规则（能不调 AI 就不调）：
+ * @return true=确定对，false=确定错，null=无法判定、交给 AI
+ */
+object LocalAnswerChecker {
+    fun check(userInput: String, correctAnswer: String): Boolean? {
+        val userTrim = userInput.trim()
+        val correctTrim = correctAnswer.trim()
+
+        val userNum = userTrim.toDoubleOrNull()
+        val correctNum = correctTrim.toDoubleOrNull()
+        if (userNum != null && correctNum != null) {
+            return kotlin.math.abs(userNum - correctNum) < 1e-6
+        }
+        if (userTrim == correctTrim) return true
+
+        // 口语化归一后再比（"十二"/"答案是12"/"12个" 等价）
+        val userNorm = normalizeNumbers(userTrim)
+        val correctNorm = normalizeNumbers(correctTrim)
+        if (userNorm.isNotBlank() && userNorm == correctNorm) return true
+        val un = userNorm.toDoubleOrNull()
+        val cn = correctNum ?: correctNorm.toDoubleOrNull()
+        if (un != null && cn != null && kotlin.math.abs(un - cn) < 1e-6) return true
+
+        // 允许"3×4=12"这种带过程写法：抓最后一个数字对比
+        if (correctNum != null) {
+            val last = Regex("-?\\d+(?:\\.\\d+)?").findAll(userTrim)
+                .mapNotNull { it.value.toDoubleOrNull() }.toList().lastOrNull()
+            if (last != null && kotlin.math.abs(last - correctNum) < 1e-6) return true
+            val lastNorm = Regex("-?\\d+(?:\\.\\d+)?").findAll(userNorm)
+                .mapNotNull { it.value.toDoubleOrNull() }.toList().lastOrNull()
+            if (lastNorm != null && kotlin.math.abs(lastNorm - correctNum) < 1e-6) return true
+        }
+        return null // 判不出来，交给 AI
+    }
+}

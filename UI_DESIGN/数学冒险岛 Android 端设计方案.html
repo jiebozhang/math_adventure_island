@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="oGydEIksm3hnx0dW2pK9mH">
+<head data-page-node-id="G1THKfF8cX9DskQZzsNUsQ">
+<meta charset="UTF-8" data-page-node-id="MmYU900LNuG5G0VHucyskP">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="mTsdxkBRJEeHyYS2C6xsVj">
+<title>数学冒险岛 · 安卓端高保真原型</title>
+<style>
+/* ============================================================
+   设计令牌 —— 全部取自 Ardot 设计稿 (fileId 722243756558441)
+   ============================================================ */
+:root{
+  /* 底色 / 中性 */
+  --bg:#FFFAF0;              /* S1~S6 页面底色 */
+  --card:#FFFFFF;
+  --ink:#2D2A26;             /* 主文字 */
+  --ink-2:#5C5147;           /* 次文字 */
+  --ink-3:#A09889;           /* 弱文字 */
+  --ink-4:#8A7F70;           /* 提示文字 */
+  --hair:#E5D198;            /* 1px 描边 */
+  --hair-2:#F0E6D2;          /* 气泡描边 */
+  --stone:#EDD9B6;           /* 未解锁底色 */
+  --stone-2:#B4AE9E;         /* 锁图标 */
+  --cream:#FFF3DC;
+  --cream-2:#FFF6DF;
+  --cream-3:#FFF8EC;
+  --sand:#F5F1E8;
+  --track:#F5E5BD;           /* 进度轨道 */
+
+  /* 主色 */
+  --gold:#FFC857;
+  --amber:#B45309;
+  --orange:#F59E0B;
+  --orange-d:#F97316;
+  --orange-dd:#C2410C;
+  --brown:#8A6A3A;
+
+  /* 功能色 */
+  --green:#7BB661;
+  --green-d:#0E8A5F;
+  --teal:#0F766E;
+  --teal-2:#14B8A6;
+  --blue:#2563EB;
+  --blue-2:#3B82F6;
+  --blue-3:#6BB5E0;
+  --blue-4:#4A8FC7;
+  --blue-5:#1E5F85;
+  --purple:#6D28D9;
+  --purple-2:#8B5CF6;
+  --grey-1:#E5DFD0;
+
+  /* 思想印记底色 */
+  --tag-numshape:#E8F0FE;
+  --tag-transform:#E4F6EE;
+  --tag-equation:#F0EAFE;
+  --tag-model:#FEF0E2;
+  --tag-stat:#E2F6F4;
+  --tag-reason:#FDEDE2;
+
+  /* 怪兽色 */
+  --m-careless:#5DADE2;
+  --m-calc:#E67E22;
+  --m-reading:#8E44AD;
+  --m-unit:#16A085;
+  --m-concept:#D35400;
+  --m-check:#2980B9;
+
+  /* 阴影 */
+  --sh-card:0 4px 14px -2px rgba(89,71,41,.10);
+  --sh-tab:0 6px 18px -2px rgba(89,71,41,.18);
+  --sh-hero:0 6px 16px -2px rgba(46,107,153,.28);
+  --sh-badge:0 8px 26px -2px rgba(255,178,77,.50);
+  --sh-glow:0 0 14px 0 rgba(255,199,87,.45);
+
+  /* 圆角 */
+  --r-lg:22px; --r-md:20px; --r-sm:16px; --r-xs:14px;
+
+  --font-cn:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',system-ui,sans-serif;
+  --font-num:'Inter','SF Pro Display','Segoe UI',system-ui,sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  font-family:var(--font-cn);
+  background:#F3EDE2;
+  display:flex;align-items:center;justify-content:center;
+  padding:28px 16px;
+  min-height:100vh;
+}
+.num{font-family:var(--font-num);}
+
+/* ---------- 手机外壳 ---------- */
+.stage{display:flex;flex-direction:column;align-items:center;gap:14px;}
+.stage-label{font-size:12px;color:#9A8C7A;}
+.stage-title{font-size:13px;color:#8B8073;letter-spacing:.3px;}
+
+.phone{
+  position:relative;
+  width:390px;height:844px;
+  background:var(--bg);
+  border-radius:44px;
+  overflow:hidden;
+  box-shadow:0 24px 60px -12px rgba(60,45,25,.38), 0 0 0 11px #1F1B17, 0 0 0 13px #38312A;
+  flex-shrink:0;
+}
+
+/* ---------- 屏幕容器 ---------- */
+.screen{
+  position:absolute;inset:0;
+  display:none;
+  flex-direction:column;
+  background:var(--bg);
+}
+.screen.active{display:flex;}
+.screen.enter{animation:slideIn .26s cubic-bezier(.22,.9,.32,1);}
+@keyframes slideIn{from{opacity:0;transform:translateX(18px);}to{opacity:1;transform:none;}}
+
+/* ---------- 状态栏 ---------- */
+.statusbar{
+  height:62px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px 0;
+}
+.sb-time{font-size:16px;font-weight:600;color:var(--ink);letter-spacing:.2px;}
+.sb-icons{display:flex;align-items:center;gap:6px;}
+
+/* ---------- 内容区 ---------- */
+.content{
+  flex:1;min-height:0;
+  display:flex;flex-direction:column;
+  padding:16px;
+  overflow-y:auto;
+  scrollbar-width:none;
+}
+.content::-webkit-scrollbar{display:none;}
+.gap-12{gap:12px;} .gap-10{gap:10px;} .gap-8{gap:8px;} .gap-14{gap:14px;}
+
+/* ---------- 卡片 ---------- */
+.card{
+  background:var(--card);
+  border-radius:var(--r-lg);
+  box-shadow:var(--sh-card);
+  padding:14px;
+  display:flex;flex-direction:column;
+  flex-shrink:0;
+}
+.card-16{padding:16px;}
+
+/* ---------- 首页 S1 ---------- */
+.hero-row{display:flex;align-items:center;gap:12px;}
+.avatar{
+  width:52px;height:52px;border-radius:26px;background:var(--gold);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.hero-col{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;}
+.hero-name{font-size:18px;font-weight:700;color:var(--ink);}
+.hero-sub{font-size:12px;color:var(--ink-2);}
+.streak{
+  display:flex;align-items:center;gap:5px;
+  background:var(--cream);border-radius:15px;padding:8px;
+  flex-shrink:0;
+}
+.streak span{font-size:12px;font-weight:600;color:var(--amber);}
+
+.exp-wrap{display:flex;flex-direction:column;gap:7px;}
+.exp-row{display:flex;align-items:center;justify-content:space-between;}
+.exp-label{font-size:11px;font-weight:500;color:var(--ink-2);}
+.exp-val{font-size:11px;font-weight:600;color:var(--ink);}
+.exp-track{height:10px;background:var(--track);border-radius:5px;overflow:hidden;}
+.exp-fill{height:10px;background:var(--gold);border-radius:5px;transition:width .8s cubic-bezier(.22,.9,.32,1);}
+
+.continue{
+  background:linear-gradient(90deg,#6BB5E0 0%,#4A8FC7 100%);
+  border-radius:var(--r-lg);
+  box-shadow:var(--sh-hero);
+  padding:16px;display:flex;flex-direction:column;gap:6px;
+  flex-shrink:0;
+}
+.continue .tag{font-size:12px;font-weight:600;color:#DCEEFB;letter-spacing:.3px;}
+.continue .title{font-size:22px;font-weight:700;color:#fff;}
+.continue .sub{font-size:12px;color:#DCEEFB;}
+.continue .foot{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
+.pill-ghost{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.22);border-radius:14px;padding:8px;
+  font-size:11px;font-weight:600;color:#fff;
+}
+.btn-white{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#fff;border-radius:20px;padding:0 16px;height:40px;
+  font-size:14px;font-weight:700;color:var(--blue-5);
+  border:none;cursor:pointer;font-family:var(--font-cn);
+}
+.btn-white:active{transform:scale(.97);}
+
+.sec-head{display:flex;align-items:center;justify-content:space-between;}
+.sec-title{font-size:16px;font-weight:700;color:var(--ink);}
+.sec-count{font-size:13px;font-weight:600;color:var(--ink-2);}
+
+.task-row{display:flex;align-items:center;gap:10px;padding:2px 0;}
+.check-on{
+  width:22px;height:22px;border-radius:11px;background:var(--green);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.check-off{
+  width:22px;height:22px;border-radius:11px;border:2px solid var(--hair);
+  flex-shrink:0;
+}
+.task-txt{flex:1;font-size:14px;font-weight:500;}
+.task-txt.done{color:var(--ink);}
+.task-txt.todo{color:var(--ink-2);}
+.task-num{font-size:12px;font-weight:600;}
+.task-num.done{color:var(--green);}
+.task-num.todo{color:var(--ink-3);}
+
+.stone-grid{display:flex;flex-wrap:wrap;gap:10px;}
+.stone{
+  width:102px;height:54px;border-radius:var(--r-sm);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  padding:8px;
+}
+.stone .n{font-size:11px;font-weight:600;}
+.stone .v{font-size:13px;font-weight:700;}
+
+/* ---------- TabBar ---------- */
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:95px;pointer-events:none;}
+.tabbar.hidden{display:none;}
+.tabpill{
+  position:absolute;left:21px;right:21px;bottom:24px;height:62px;
+  background:#fff;border:1px solid var(--hair);border-radius:36px;
+  box-shadow:var(--sh-tab);
+  padding:4px;display:flex;gap:4px;
+  pointer-events:auto;
+}
+.tab{
+  flex:1;border-radius:26px;border:none;background:transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  cursor:pointer;font-family:var(--font-cn);
+  transition:background .22s ease;
+}
+.tab.on{background:var(--gold);}
+.tab .lb{font-size:10px;font-weight:500;color:var(--ink-2);}
+.tab.on .lb{font-weight:700;color:var(--ink);}
+.tab svg{display:block;}
+
+/* ---------- 地图页 S2 ---------- */
+.page-title{font-size:22px;font-weight:700;color:var(--ink);}
+.page-sub{font-size:12px;color:var(--ink-2);}
+.book-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:#fff;border:1px solid var(--hair);border-radius:16px;padding:9px;
+  font-size:12px;font-weight:600;color:var(--ink);
+}
+.grid-2{display:flex;flex-wrap:wrap;gap:12px;}
+.field{
+  width:173px;height:96px;border-radius:var(--r-md);background:#fff;
+  box-shadow:var(--sh-card);padding:10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  border:none;cursor:pointer;font-family:var(--font-cn);
+}
+.field:active{transform:scale(.98);}
+.field .nm{font-size:14px;font-weight:700;color:var(--ink);}
+.field .ct{font-size:11px;font-weight:500;color:var(--ink-2);}
+
+.route-title{font-size:15px;font-weight:700;color:var(--ink);}
+.route-row{display:flex;align-items:center;justify-content:center;gap:8px;}
+.node{
+  width:56px;height:56px;border-radius:28px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  position:relative;
+}
+.node.done{background:var(--gold);}
+.node.now{background:#fff;border:3px solid #FFC857;box-shadow:var(--sh-glow);}
+.node.lock{background:var(--stone);}
+.node.now .nb{font-size:22px;font-weight:700;color:var(--amber);text-align:center;line-height:56px;width:100%;}
+.link{width:14px;height:4px;border-radius:2px;background:#E5D198;flex-shrink:0;}
+
+.lv-row{
+  display:flex;align-items:center;gap:12px;padding:6px;
+  border-radius:var(--r-xs);background:var(--cream-3);
+}
+.lv-row.cur{background:var(--cream-2);border:1.5px solid #FFC857;}
+.lv-row .dot{width:34px;height:34px;border-radius:17px;flex-shrink:0;}
+.lv-row .dot.done{background:var(--green);}
+.lv-row .dot.cur{background:#fff;border:2.5px solid #FFC857;}
+.lv-row .dot.lock{background:var(--stone);}
+.lv-col{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;}
+.lv-name{font-size:14px;font-weight:600;color:var(--ink);}
+.lv-name.dim{color:var(--ink-3);}
+.lv-meta{font-size:11px;color:var(--ink-2);}
+.lv-meta.dim{color:var(--stone-2);}
+.link-more{font-size:12px;font-weight:600;color:var(--amber);background:none;border:none;cursor:pointer;font-family:var(--font-cn);}
+
+/* ---------- 答题页 S3 ---------- */
+.q-top{display:flex;align-items:center;gap:10px;}
+.q-back{
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  background:none;border:none;cursor:pointer;flex-shrink:0;
+}
+.q-title{flex:1;font-size:17px;font-weight:700;color:var(--ink);}
+.timer-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--cream);border-radius:14px;padding:7px;flex-shrink:0;
+}
+.timer-pill span{font-size:12px;font-weight:700;color:var(--amber);}
+
+.step-row{display:flex;align-items:center;gap:10px;}
+.step-label{font-size:11px;font-weight:600;color:var(--ink-2);white-space:nowrap;}
+.step-track{flex:1;height:8px;background:var(--track);border-radius:4px;overflow:hidden;}
+.step-fill{height:8px;background:var(--gold);border-radius:4px;transition:width .35s ease;}
+
+.q-card{background:#fff;border-radius:var(--r-md);box-shadow:var(--sh-card);padding:14px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;}
+.step-tag{
+  align-self:flex-start;background:var(--tag-numshape);border-radius:12px;padding:7px;
+  font-size:11px;font-weight:600;color:var(--blue);
+}
+.q-text{font-size:16px;color:var(--ink);line-height:1.55;}
+.q-img{
+  height:76px;border-radius:12px;
+  background:linear-gradient(90deg,#8CCCED 0%,#5C9ED1 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:500;color:#fff;
+}
+
+.bubble-row{display:flex;gap:10px;align-items:flex-start;flex-shrink:0;}
+.tutor{
+  width:32px;height:32px;border-radius:16px;background:var(--gold);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.bubble{
+  flex:1;background:var(--cream-3);border:1px solid var(--hair-2);
+  border-radius:var(--r-sm);padding:12px;
+  font-size:14px;color:var(--ink);line-height:1.55;
+}
+
+.answer-box{
+  background:#fff;border:2px solid #FFC857;border-radius:18px;padding:12px;
+  display:flex;flex-direction:column;gap:8px;flex-shrink:0;
+}
+.ans-label{font-size:11px;font-weight:500;color:var(--ink-2);}
+.ans-text{font-size:16px;font-weight:600;color:var(--ink);min-height:22px;line-height:1.4;}
+.ans-text.ph{font-weight:400;color:var(--ink-3);}
+.ans-hint{display:flex;align-items:center;gap:6px;}
+.ans-hint span{font-size:11px;color:var(--ink-4);}
+
+.keypad{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.krow{display:flex;gap:8px;}
+.key{
+  width:83px;height:46px;border-radius:12px;border:none;
+  font-size:20px;font-weight:600;font-family:var(--font-num);
+  background:#2D2A26;color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .08s ease;
+}
+.key:active{transform:scale(.94);}
+.key.op{background:var(--amber);color:var(--cream);}
+.key.fn{background:var(--ink-4);color:var(--sand);font-size:15px;font-family:var(--font-cn);font-weight:600;}
+
+.act-row{display:flex;gap:10px;flex-shrink:0;padding-bottom:4px;}
+.act-sub{
+  width:92px;height:48px;border-radius:14px;
+  background:#2D2A26;color:#fff;
+  font-size:14px;font-weight:600;font-family:var(--font-cn);
+  border:none;cursor:pointer;
+}
+.act-main{
+  width:154px;height:48px;border-radius:14px;
+  background:#2D2A26;color:var(--gold);
+  font-size:16px;font-weight:700;font-family:var(--font-cn);
+  border:none;cursor:pointer;
+}
+.act-sub:active,.act-main:active{transform:scale(.97);}
+
+/* ---------- 结算页 S4 ---------- */
+.res-top{display:flex;align-items:center;}
+.spacer{flex:1;}
+.close-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;}
+
+.celebrate{display:flex;flex-direction:column;align-items:center;gap:10px;padding:6px 0;}
+.badge{
+  width:96px;height:96px;border-radius:48px;
+  background:linear-gradient(90deg,#FFC857 0%,#FF8C7A 100%);
+  box-shadow:var(--sh-badge);
+  display:flex;align-items:center;justify-content:center;
+  animation:pop .6s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop{0%{transform:scale(.7);opacity:0;}100%{transform:scale(1);opacity:1;}}
+.res-title{font-size:26px;font-weight:700;color:var(--ink);}
+.res-sub{font-size:13px;color:var(--ink-2);}
+.stars{display:flex;gap:10px;}
+.star{animation:starpop .4s cubic-bezier(.34,1.56,.64,1) backwards;}
+.star:nth-child(1){animation-delay:.15s;}
+.star:nth-child(2){animation-delay:.45s;}
+.star:nth-child(3){animation-delay:.75s;}
+@keyframes starpop{0%{transform:scale(0) rotate(-40deg);opacity:0;}100%{transform:none;opacity:1;}}
+
+.magic-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.magic{
+  width:159px;height:42px;border-radius:14px;border:none;
+  font-size:13px;font-weight:500;font-family:var(--font-cn);
+  background:var(--sand);color:var(--ink-2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s ease;
+}
+.magic.on{background:#2D2A26;color:var(--gold);font-weight:600;}
+
+.res-actions{display:flex;gap:10px;padding-bottom:4px;}
+.btn-dark{
+  width:159px;height:52px;border-radius:16px;border:none;
+  background:#2D2A26;color:#fff;font-size:15px;font-weight:600;font-family:var(--font-cn);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.btn-dark.alt{color:var(--gold);font-weight:700;}
+.btn-dark:active{transform:scale(.97);}
+
+/* ---------- 图鉴页 S5 ---------- */
+.seg{display:flex;gap:4px;background:var(--sand);border-radius:19px;padding:4px;height:38px;}
+.seg button{
+  flex:1;border-radius:15px;border:none;background:transparent;
+  font-size:13px;font-family:var(--font-cn);cursor:pointer;
+  color:var(--ink-2);font-weight:500;transition:all .2s ease;
+}
+.seg button.on{background:#2D2A26;color:#fff;font-weight:700;}
+
+.mon-grid{display:flex;flex-wrap:wrap;gap:12px;}
+.mon{
+  width:173px;border-radius:18px;background:#fff;box-shadow:var(--sh-card);
+  padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;
+  min-height:138px;
+}
+.mon .nm{font-size:14px;font-weight:700;color:var(--ink);}
+.mon .ds{font-size:11px;color:var(--ink-2);text-align:center;}
+.mon .st{font-size:11px;font-weight:600;}
+
+.tip-card{
+  display:flex;align-items:center;gap:10px;
+  background:var(--cream-2);border-radius:18px;padding:12px;
+}
+.tip-col{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.tip-t{font-size:13px;font-weight:700;color:var(--amber);}
+.tip-d{font-size:11px;color:var(--brown);}
+
+.wrong-row{
+  display:flex;align-items:center;gap:10px;
+  background:#fff;border-radius:var(--r-xs);box-shadow:var(--sh-card);
+  padding:12px;
+}
+.wrong-badge{
+  width:38px;height:38px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;
+}
+.wrong-col{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.wrong-q{font-size:13px;font-weight:600;color:var(--ink);line-height:1.4;}
+.wrong-m{font-size:11px;color:var(--ink-2);}
+
+/* ---------- 家长页 S6 ---------- */
+.overview-row{display:flex;gap:8px;}
+.stat{
+  flex:1;background:var(--cream-3);border-radius:var(--r-xs);padding:10px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.stat .v{font-size:24px;font-weight:700;line-height:1.1;}
+.stat .l{font-size:11px;color:var(--ink-2);}
+
+.set-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px;
+}
+.set-label{font-size:14px;font-weight:500;color:var(--ink);}
+.switch{
+  width:44px;height:26px;border-radius:13px;padding:3px;
+  display:flex;align-items:center;border:none;cursor:pointer;
+  background:var(--gold);justify-content:flex-end;
+  transition:background .22s ease;
+}
+.switch.off{background:var(--grey-1);justify-content:flex-start;}
+.switch .knob{width:20px;height:20px;border-radius:10px;background:#fff;display:block;}
+
+.bank-row{display:flex;gap:10px;}
+.bank-btn{
+  width:159px;height:46px;border-radius:14px;border:none;
+  font-size:13px;font-weight:600;font-family:var(--font-cn);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.bank-btn:active{transform:scale(.97);}
+
+.sync-card{
+  display:flex;align-items:center;gap:12px;
+  background:var(--cream-2);border-radius:var(--r-md);padding:14px;
+}
+.sync-col{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.sync-t{font-size:14px;font-weight:700;color:var(--amber);}
+.sync-d{font-size:11px;color:var(--brown);}
+.sync-btn{
+  width:84px;height:40px;border-radius:14px;border:none;
+  background:#2D2A26;color:var(--gold);
+  font-size:13px;font-weight:700;font-family:var(--font-cn);cursor:pointer;
+  flex-shrink:0;
+}
+.sync-btn:active{transform:scale(.97);}
+
+/* ---------- AI 模型配置卡 ---------- */
+.ai-card{padding:12px 14px;gap:6px;}
+.ai-head{display:flex;align-items:center;justify-content:space-between;}
+.ai-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:#E0F4DD;color:#0E8A5F;
+  border-radius:10px;padding:3px 8px;
+  font-size:10px;font-weight:600;
+}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:#7BB661;display:inline-block;}
+.ai-sub{font-size:10px;color:var(--ink-3);line-height:1.5;display:block;}
+.hair-line{height:1px;background:var(--hair-2);width:100%;}
+.ai-field{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px;cursor:pointer;border-radius:8px;
+  transition:background .15s ease;
+}
+.ai-field:active{background:var(--cream-3);}
+.f-l{font-size:12px;font-weight:500;color:var(--ink-2);}
+.f-v{font-size:12px;font-weight:600;color:var(--ink);font-family:var(--font-cn);}
+.v-orange{color:var(--amber);}
+.v-mono{font-family:'SF Mono','Consolas','Menlo',monospace;font-size:12px;}
+.ai-btnrow{display:flex;gap:8px;padding-top:2px;}
+.btn-ghost{
+  flex:1;height:34px;border-radius:14px;border:1.2px solid var(--gold);
+  background:#fff;color:var(--amber);
+  font-size:13px;font-weight:600;font-family:var(--font-cn);cursor:pointer;
+}
+.btn-ghost:active{transform:scale(.97);background:var(--cream-3);}
+.btn-solid{
+  flex:1;height:34px;border-radius:14px;border:none;
+  background:var(--gold);color:#fff;
+  font-size:13px;font-weight:700;font-family:var(--font-cn);cursor:pointer;
+}
+.btn-solid:active{transform:scale(.97);background:#FFB42E;}
+.ai-status{display:flex;align-items:center;gap:6px;padding-top:0;}
+.dot-on{background:#7BB661;}
+.status-text{font-size:10px;color:var(--green-d);}
+.ai-help{
+  display:flex;align-items:center;gap:4px;padding-top:0;cursor:pointer;
+  font-size:10px;color:var(--ink-3);
+}
+.help-i{
+  width:12px;height:12px;border-radius:50%;
+  background:#F4F2EA;color:var(--ink-3);
+  font-size:9px;font-weight:700;font-family:var(--font-en);
+  display:inline-flex;align-items:center;justify-content:center;font-style:italic;
+}
+
+/* ---------- AI Modal ---------- */
+.modal-back{
+  position:fixed;inset:0;background:rgba(45,42,38,.45);
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;transition:opacity .2s ease;z-index:999;
+}
+.modal-back.open{opacity:1;}
+.modal-sheet{
+  width:390px;max-width:100%;background:var(--bg);
+  border-radius:24px 24px 0 0;padding:8px 16px 24px;
+  transform:translateY(100%);transition:transform .26s cubic-bezier(.2,.8,.2,1);
+}
+.modal-back.open .modal-sheet{transform:translateY(0);}
+.modal-handle{width:36px;height:4px;background:var(--hair);border-radius:2px;margin:6px auto 12px;}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.modal-t{font-size:16px;font-weight:700;color:var(--ink);font-family:var(--font-cn);}
+.modal-x{
+  width:28px;height:28px;border-radius:14px;border:none;background:var(--cream-3);
+  color:var(--ink-2);font-size:18px;line-height:1;cursor:pointer;
+}
+.modal-bd{padding:4px 0 16px;min-height:120px;}
+.modal-ft{display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--hair-2);}
+
+/* Modal 子元素 */
+.ai-modal-list{display:flex;flex-direction:column;gap:8px;}
+.ai-preset{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;border-radius:14px;border:1.2px solid var(--hair-2);
+  background:#fff;color:var(--ink);font-size:14px;font-weight:500;
+  font-family:var(--font-cn);cursor:pointer;text-align:left;
+}
+.ai-preset:active{transform:scale(.98);}
+.ai-preset.sel{border-color:var(--gold);background:var(--cream-3);font-weight:700;}
+.preset-base{font-size:10px;color:var(--ink-3);font-family:'SF Mono','Consolas',monospace;}
+.ai-modal-tip{font-size:11px;color:var(--ink-3);line-height:1.6;margin-top:12px;}
+.ai-input-lb{display:block;font-size:12px;color:var(--ink-2);margin-bottom:6px;}
+.ai-input{
+  width:100%;box-sizing:border-box;height:42px;border-radius:12px;
+  border:1.2px solid var(--hair-2);padding:0 14px;
+  font-size:14px;font-family:var(--font-cn);color:var(--ink);
+  background:#fff;outline:none;
+}
+.ai-input:focus{border-color:var(--gold);}
+.ai-input.masked{letter-spacing:2px;font-family:'SF Mono','Consolas',monospace;}
+.ai-help-body{font-size:13px;color:var(--ink);line-height:1.7;font-family:var(--font-cn);}
+.ai-help-body p{margin:6px 0;}
+.ai-help-body ul{margin:6px 0 6px 18px;}
+.ai-help-body li{margin:3px 0;}
+.ai-help-body code{background:var(--cream-3);padding:1px 6px;border-radius:4px;font-family:'SF Mono','Consolas',monospace;font-size:12px;color:var(--amber);}
+
+/* ---------- 日记页（补页，沿用同套令牌） ---------- */
+.diary-card{background:#fff;border-radius:var(--r-md);box-shadow:var(--sh-card);padding:14px;display:flex;flex-direction:column;gap:8px;}
+.diary-head{display:flex;align-items:center;justify-content:space-between;}
+.diary-date{font-size:11px;font-weight:500;color:var(--ink-3);}
+.diary-lv{font-size:15px;font-weight:700;color:var(--ink);}
+.diary-note{font-size:13px;color:var(--ink-2);line-height:1.6;}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;}
+.mini-tag{
+  border-radius:11px;padding:6px 10px;font-size:11px;font-weight:600;
+}
+
+/* ---------- 页面底部留白（让 TabBar 不遮挡） ---------- */
+.content.with-tab{padding-bottom:100px;}
+
+/* ---------- 外部图例 ---------- */
+.hint{font-size:12px;color:#928672;text-align:center;max-width:420px;line-height:1.7;}
+</style>
+</head>
+<body data-page-node-id="1FbjAAKUzVwba8RHPs6DEm">
+
+<div class="stage" data-page-node-id="qF2cwCmlLfVnLD2wHD6ikt">
+  <div class="phone" data-page-node-id="jKQoMVcCpAK2XisLxbK766">
+
+    <!-- ================= 状态栏（复用组件） ================= -->
+    <!-- 下面每个 screen 内部各自含一个 statusbar -->
+
+    <!-- ============ S1 首页主菜单 ============ -->
+    <section class="screen active" id="home" data-page-node-id="2N2okc6GPPFFywyTLvgiGj">
+      <div class="statusbar" data-page-node-id="FdILGdjmSYrAREW0c4f5ak">
+        <span class="sb-time num" data-page-node-id="u7WZ7QmzL6is1kmlcBGUrI">9:41</span>
+        <div class="sb-icons" data-page-node-id="oN3KJiVPbVUStRDMXnyc1A">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="11R1TgaMkc9I4Z5yr86uG8">
+            <rect x="0.5" y="11" width="3" height="6" rx="1" fill="#2D2A26" data-page-node-id="HBgeASin7IgOpUjKCMbEZM"/>
+            <rect x="5.5" y="8" width="3" height="9" rx="1" fill="#2D2A26" data-page-node-id="v6LKKgbWkxEogXHItenXTL"/>
+            <rect x="10.5" y="4.75" width="3" height="12.5" rx="1" fill="#2D2A26" data-page-node-id="y1BhiFF7HKVd3AXpwl1ED3"/>
+            <rect x="15" y="1.5" width="3" height="16" rx="1" fill="#2D2A26" data-page-node-id="UX681dSv7Asgi3XVFH1vot"/>
+          </svg>
+          <svg width="20" height="18" viewBox="0 0 20 18" fill="none" data-page-node-id="O9LG4FQGeo4ON5GlwkekIG">
+            <path d="M1 6.4C3.6 4.1 6.7 3 10 3s6.4 1.1 9 3.4" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="6mPOmwCmQTn67C1sm7pl75"/>
+            <path d="M4.4 9.6C6.1 8.3 8 7.6 10 7.6s3.9.7 5.6 2" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="dPdYvnySzDIugpAFN1fxVU"/>
+            <circle cx="10" cy="14.6" r="1.7" fill="#2D2A26" data-page-node-id="Lk7PDR6BcVYQFrCDTJiEhR"/>
+          </svg>
+          <svg width="26" height="14" viewBox="0 0 26 14" fill="none" data-page-node-id="rgDKNptadFSPEndDsyCVFY">
+            <rect x="0.6" y="0.6" width="22" height="12.8" rx="3.5" stroke="#2D2A26" stroke-opacity="0.35" stroke-width="1.2" data-page-node-id="HeY0f9moJdwxMl5HWAHFfd"/>
+            <rect x="2.2" y="2.2" width="16" height="9.6" rx="2" fill="#2D2A26" data-page-node-id="x4Wu4pGrbY3YAgFUPyjTe2"/>
+            <path d="M24 4.8v4.4a2.2 2.2 0 0 0 0-4.4z" fill="#2D2A26" fill-opacity="0.35" data-page-node-id="mL0PDpNn6f40IfzMuympBx"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="content gap-12 with-tab" data-page-node-id="7IL2mlQH2cLz99dAsmRf8N">
+        <!-- 勇者信息卡 -->
+        <div class="card" data-page-node-id="6MIRB2kjEkaP6xbWK89bBR">
+          <div class="hero-row" data-page-node-id="d1aqI9RB2vQk4iCIQfzTxX">
+            <div class="avatar" data-page-node-id="fMJd6evbIWGAc99oI3GDPI">
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" data-page-node-id="IAlMmUT4GFXHsAGLMUIfpF">
+                <circle cx="14" cy="8.5" r="5" fill="#fff" data-page-node-id="VWpzWV1YNqC02VWDB5NXFH"/>
+                <path d="M3.5 26c0-5.8 4.7-9 10.5-9s10.5 3.2 10.5 9" fill="#fff" data-page-node-id="CEkAH6OfusyH1LSIHEsKgT"/>
+                <circle cx="14" cy="8.5" r="5" stroke="#FFC857" stroke-width="0" data-page-node-id="DB1YjyMX2WqN7UiNC8ZJnp" />
+              </svg>
+            </div>
+            <div class="hero-col" data-page-node-id="CVgeBvn6fGN35TvRPtrIGg">
+              <span class="hero-name" data-page-node-id="5DPQC6BKVkuzNrLde63sRz">小勇者</span>
+              <span class="hero-sub" data-page-node-id="DiLHkxy63QjIFVNRVboXoQ">Lv.7 · 数学探险家</span>
+            </div>
+            <div class="streak" data-page-node-id="L4KbyLgDUFIMdE2lBHMK9v">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" data-page-node-id="jJhePcshHxZZDCPGXkt1Vp">
+                <path d="M7 0.8c1.6 2.6.4 3.6 1.9 4.4 1.2.6 2.2-.3 2.6-1.4 1 .9 1.7 2.2 1.7 3.7 0 2.8-2.7 5.7-6.2 5.7S1 10.3 1 7.5c0-2 1.6-3.6 3.6-3.6.4 0 .8.1 1.1.2C6.3 3 6.4 1.9 7 .8z" fill="#F59E0B" data-page-node-id="PXvfMHwec3vt9CNsynmPNJ"/>
+              </svg>
+              <span data-page-node-id="C7LKgZhWc9aJdZMVLhH7KG">5 天</span>
+            </div>
+          </div>
+          <div class="exp-wrap" data-page-node-id="izFF9YcqichqnUV0J49qqj">
+            <div class="exp-row" data-page-node-id="kikuOOvPX8EyFwwPyOdPyE">
+              <span class="exp-label" data-page-node-id="wkAKYV4rJH6WwHA2yYxm1t">距离 Lv.8</span>
+              <span class="exp-val num" id="homeExpVal" data-page-node-id="FA6XapnWrI76wFSWo27rrF">320 / 400</span>
+            </div>
+            <div class="exp-track" data-page-node-id="uXOkFtM8C6fLjXBqANtzbc"><div class="exp-fill" id="homeExpFill" style="width:80%" data-page-node-id="SuEoGFhKwE6Nx4CjAI0C1y"></div></div>
+          </div>
+        </div>
+
+        <!-- 继续闯关卡 -->
+        <div class="continue" data-page-node-id="TYSfJveArzkJD3NmTRwRkn">
+          <span class="tag" data-page-node-id="A2fkLLKCXAnEEg8zbmsMrX">继续冒险</span>
+          <span class="title" data-page-node-id="biEDlmCv2S2sVQdlzbdvJg">倍的认识</span>
+          <span class="sub" data-page-node-id="gNJP3xEX2ezFk0tFXqxcz2">三年级上册 · 第 5 单元 · 计算城堡</span>
+          <div class="foot" data-page-node-id="Dx5Z8IYGHZbdHBn51qIHoH">
+            <span class="pill-ghost" data-page-node-id="JAeA8d5CdAnRGVK5oH6x2X">已过 2 / 9 关</span>
+            <button class="btn-white" onclick="go('map')" data-page-node-id="PgEmUTDiHhoxNP5SZW2cAU">
+              开始闯关
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" data-page-node-id="8TnnTnuD5Hu2KSGiDoFPfD">
+                <path d="M3 1.5L9.5 7 3 12.5" stroke="#1E5F85" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="sGGu9dTZchJohmx7TspG23"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 今日任务卡 -->
+        <div class="card card-16" data-page-node-id="UcZFB6XtnLXiCO3kQMLiZw">
+          <div class="sec-head" data-page-node-id="e8dRGH8QvaVZAlCRDztlbb">
+            <span class="sec-title" data-page-node-id="kr7dchxHIps7DLU9o1FR4A">今日任务</span>
+            <span class="sec-count num" data-page-node-id="7ODCA0Alo0D2N5FbEcoT6d">1 / 3</span>
+          </div>
+          <div class="task-row" data-page-node-id="XzbrcVFdwpxjNEyO2vUeAC">
+            <div class="check-on" data-page-node-id="tsgDOBvKGDfHQv3cFpW642">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" data-page-node-id="kUVl0TgxgXt2fVOvBLATqB"><path d="M1.5 6.2L4.4 9 10.5 3" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="8fBDC2bFATReu8UIRKKhys"/></svg>
+            </div>
+            <span class="task-txt done" data-page-node-id="ldwUAS2EAwmPLMX6wJ9DEP">答对 3 道题</span>
+            <span class="task-num num done" data-page-node-id="GYfD3KdbTYDkeeBPB1mHTd">3/3</span>
+          </div>
+          <div class="task-row" data-page-node-id="T0OkTqJIHg2jr4ETrcNUl5">
+            <div class="check-off" data-page-node-id="AppJIu8pvdIb9BwHp4wUka"></div>
+            <span class="task-txt todo" data-page-node-id="dvQIUIEmqsBGrPvvMDgHUo">击败 1 只怪兽</span>
+            <span class="task-num num todo" data-page-node-id="pU9fI2GBZ4AhoUCNlonm5K">0/1</span>
+          </div>
+          <div class="task-row" data-page-node-id="5buPWvliVi2K0UVJn2RgSG">
+            <div class="check-off" data-page-node-id="LmeZekQE0bqH355auKxsPs"></div>
+            <span class="task-txt todo" data-page-node-id="OuAb5PrfDGeEhEYsuqHCLE">写下 1 条方法笔记</span>
+            <span class="task-num num todo" data-page-node-id="FEahCynWRYKqBvXbYaNuJ1">0/1</span>
+          </div>
+        </div>
+
+        <!-- 思想印记卡 -->
+        <div class="card" data-page-node-id="alDWgMM0CqFwGUoqDAaXcd">
+          <div class="sec-head" data-page-node-id="AGQ1lkZUursPsxpHxOGeBt">
+            <span class="sec-title" data-page-node-id="ICjIfD1sOWGY8cmCC6Ichu">思想印记</span>
+            <span class="sec-count num" data-page-node-id="sIaDUFLCpPpYffS7geVAiI">19 / 60</span>
+          </div>
+          <div class="stone-grid" data-page-node-id="Ha1itESW1pJkDGg7qdbKIk">
+            <div class="stone" style="background:var(--tag-numshape)" data-page-node-id="iyMIk2N7ylM3VX1YEhzcSm">
+              <span class="n" style="color:var(--blue)" data-page-node-id="0l1XSbNZVDA57HdnkAGEaG">数形结合</span>
+              <span class="v num" style="color:var(--blue-2)" data-page-node-id="UOV1e4L7KYdakfn2Ak150A">6/18</span>
+            </div>
+            <div class="stone" style="background:var(--tag-transform)" data-page-node-id="CaCF52IMksw85PPK4AdOb5">
+              <span class="n" style="color:var(--teal)" data-page-node-id="f3eERQSRb5XldmIhMzKKMA">转化思想</span>
+              <span class="v num" style="color:var(--green-d)" data-page-node-id="PZYen5iEgEwsMlwfiVAhhM">4/15</span>
+            </div>
+            <div class="stone" style="background:var(--tag-equation)" data-page-node-id="JU4zaVuf9RaXKow3zAwYrc">
+              <span class="n" style="color:var(--purple)" data-page-node-id="pYAPtS4JR0hGCnpSMxQedR">符号方程</span>
+              <span class="v num" style="color:var(--purple-2)" data-page-node-id="jlRWKCwSAxP6C1g8YAHpJA">1/4</span>
+            </div>
+            <div class="stone" style="background:var(--tag-model)" data-page-node-id="iXQeWvDRnF32lHrG3IRGJF">
+              <span class="n" style="color:var(--amber)" data-page-node-id="OmD0trogJ9Rotiq7rdG0bQ">模型思想</span>
+              <span class="v num" style="color:var(--orange)" data-page-node-id="Tncab9oEShfdxgpLwgGTu4">5/15</span>
+            </div>
+            <div class="stone" style="background:var(--tag-stat)" data-page-node-id="7sFHd7t799G1zBBnQpqk9B">
+              <span class="n" style="color:var(--teal)" data-page-node-id="wgDdjJJ0WB7HCx3Yem7YZD">分类统计</span>
+              <span class="v num" style="color:var(--teal-2)" data-page-node-id="tZtk4fxQ0d3hhqFBXKwolP">1/2</span>
+            </div>
+            <div class="stone" style="background:var(--tag-reason)" data-page-node-id="PyvcnjD0x2eBKkPb6S0YvZ">
+              <span class="n" style="color:var(--orange-dd)" data-page-node-id="bhKhrfwxXFKKoFeS3kRPyo">逻辑推理</span>
+              <span class="v num" style="color:var(--orange-d)" data-page-node-id="sSFBzZUcR7Jgpu9LQsvQbq">2/6</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TabBar -->
+      <div class="tabbar" id="tabbar" data-page-node-id="7aq9SBNA2rbAy9nouXNOdk">
+        <div class="tabpill" data-page-node-id="iSqg7GJI9fMO7gA1lA3ID6">
+          <button class="tab on" data-tab="home" data-page-node-id="YMg0neHsVbaBCWjBSCV8ux">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="5CzO0bK1gbwMAyChto6205">
+              <path d="M9 1.2c-2.6 0-4.7 2.1-4.7 4.7 0 3.4 4.7 10.9 4.7 10.9s4.7-7.5 4.7-10.9c0-2.6-2.1-4.7-4.7-4.7z" stroke="#2D2A26" stroke-width="1.5" data-page-node-id="rgXG4HQdb1r4EjjHSB7VKv"/>
+              <circle cx="9" cy="5.9" r="1.95" stroke="#2D2A26" stroke-width="1.5" data-page-node-id="d1cB5Se8CTYkm9tkvSA2KB"/>
+            </svg>
+            <span class="lb" data-page-node-id="V5SBqPEDU6Ej2J4SpsYalu">冒险</span>
+          </button>
+          <button class="tab" data-tab="codex" data-page-node-id="4mBGYtCFHZujtjYpuHakoT">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="7I95wYbWW894Ys10S45TEQ">
+              <path d="M3 2.2h9.5A2.5 2.5 0 0 1 15 4.7v11.1H5.5A2.5 2.5 0 0 1 3 13.3V2.2z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="cRasggn54AG7SFB3ROAyE4"/>
+              <path d="M6 6.2h6M6 9.2h6" stroke="#5C5147" stroke-width="1.5" stroke-linecap="round" data-page-node-id="Z1Zxo1Ij4mQ6Z8uoab4twS"/>
+            </svg>
+            <span class="lb" data-page-node-id="8ggcvqKd68nhXFh3W9qe2Q">图鉴</span>
+          </button>
+          <button class="tab" data-tab="diary" data-page-node-id="yMzzC72dBxrkC7BIxZzhc4">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="obZbxF9zMwEwhaW7kZWn5C">
+              <path d="M4.2 1.8h9.6v14.4H4.2z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="jfElAsrRh5vnE3cr3IT8Dx"/>
+              <path d="M6.6 6h4.8v1.8H6.6z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="5iw9Ao58jPVFsqX1wRtLtW"/>
+            </svg>
+            <span class="lb" data-page-node-id="GFzrIRFgAxdFGRpEnNbfrD">日记</span>
+          </button>
+          <button class="tab" data-tab="parent" data-page-node-id="zfBX7bzujEcYLkt5DIkUm2">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="2JmSwCPeGpvRnnODvHUW9Q">
+              <path d="M9 1.5l6.2 2.3v5.1c0 4-2.6 6.9-6.2 8.1-3.6-1.2-6.2-4.1-6.2-8.1V3.8L9 1.5z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="zHBGwv3dIs0dhc6ugCHsd7"/>
+              <path d="M6.3 9.1l1.9 1.9 3.5-3.7" stroke="#5C5147" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="ATbHoyBqsiEkYLW94O7osU"/>
+            </svg>
+            <span class="lb" data-page-node-id="HYHyKAvvACb1nERP0hEijc">家长</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ S2 冒险地图 ============ -->
+    <section class="screen" id="map" data-page-node-id="UPA7HyCw1DhkFiqplP7fFk">
+      <div class="statusbar" data-page-node-id="LFAi5m0DJCzjeocXMEBXR6">
+        <span class="sb-time num" data-page-node-id="EtbHQPe2zlsCS5xFrt8BIo">9:41</span>
+        <div class="sb-icons" data-page-node-id="Anoclv4dFFA1Hiwr8tPweq">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="OOo9Qxm65syye8a2Smv4cq">
+            <rect x="0.5" y="11" width="3" height="6" rx="1" fill="#2D2A26" data-page-node-id="7aXRxAsGBQM7o0rJ71sPEb"/><rect x="5.5" y="8" width="3" height="9" rx="1" fill="#2D2A26" data-page-node-id="oEHzEtjPjbzHJFmybKKoib"/><rect x="10.5" y="4.75" width="3" height="12.5" rx="1" fill="#2D2A26" data-page-node-id="2CgbKEE8s48qfnzLRxo3PY"/><rect x="15" y="1.5" width="3" height="16" rx="1" fill="#2D2A26" data-page-node-id="ZbzmYv4VRuD7FpuUFBZtyi"/>
+          </svg>
+          <svg width="20" height="18" viewBox="0 0 20 18" fill="none" data-page-node-id="MMOaBIB5faReXKQjbNqoHx">
+            <path d="M1 6.4C3.6 4.1 6.7 3 10 3s6.4 1.1 9 3.4" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="TDrYrBD49XnhMnh8osCplS"/><path d="M4.4 9.6C6.1 8.3 8 7.6 10 7.6s3.9.7 5.6 2" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="ee5HKllHwckO7W00r6Z0yR"/><circle cx="10" cy="14.6" r="1.7" fill="#2D2A26" data-page-node-id="dAGCAvtGcX0LjRV4bUNpLX"/>
+          </svg>
+          <svg width="26" height="14" viewBox="0 0 26 14" fill="none" data-page-node-id="ZK77Z53rEDiFYRtVuYmZ6h">
+            <rect x="0.6" y="0.6" width="22" height="12.8" rx="3.5" stroke="#2D2A26" stroke-opacity="0.35" stroke-width="1.2" data-page-node-id="mmEWsbNR6tkGqVNsSYQb6l"/><rect x="2.2" y="2.2" width="16" height="9.6" rx="2" fill="#2D2A26" data-page-node-id="qV9rll3i9paDzaqTShbGHl"/><path d="M24 4.8v4.4a2.2 2.2 0 0 0 0-4.4z" fill="#2D2A26" fill-opacity="0.35" data-page-node-id="kFcHjj3vkJvz4YHs1mYurA"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="content gap-8 with-tab" data-page-node-id="6nKF9dCOa8FGsDQrTug3Gb">
+        <!-- 页头 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;" data-page-node-id="OkgNkpLhOR30ZTMH0o2F3C">
+          <span class="page-title" data-page-node-id="GTBat4AlVhYEMWOfjNTusD">冒险地图</span>
+          <span class="book-pill" data-page-node-id="jBqDR7N7Tqkj8Idlz8SEHt">三年级上册
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" data-page-node-id="a16QLwISCIzchOjzFBZvCR"><path d="M3 4.5L6 8l3-3.5" stroke="#5C5147" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="6fjljPKf1SaOYSdCtvxl3e"/></svg>
+          </span>
+        </div>
+
+        <!-- 四大领域 -->
+        <div class="grid-2" data-page-node-id="o3ldubkfO9dyKsZmJuXwEY">
+          <button class="field" data-page-node-id="Yq656EOne0y1XOYlCLrZF0">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" data-page-node-id="okyUaRtUrHW6ovRnRsqe6s">
+              <rect x="4.3" y="3.7" width="17.3" height="21.7" rx="3.25" fill="#6BB5E0" data-page-node-id="MCeH6RQABP9AgnS5yjZZAo"/>
+              <rect x="7.6" y="8.3" width="10.8" height="4.3" rx="1.1" fill="#fff" data-page-node-id="uMaABP814MFsWZEzP9AmYb"/>
+              <circle cx="9" cy="16.5" r="1.5" fill="#fff" data-page-node-id="HYVViP1fWwhckzqCZ2OwX2"/><circle cx="13" cy="16.5" r="1.5" fill="#fff" data-page-node-id="oEYWxEU2m53F1QAPYMtpMe"/><circle cx="17" cy="16.5" r="1.5" fill="#fff" data-page-node-id="HdA9zKUyBV6Ja9NmQRrGek"/>
+            </svg>
+            <span class="nm" data-page-node-id="dcouInSakJR5wK1IRAWcfK">计算城堡</span>
+            <span class="ct num" data-page-node-id="V3ratFh28wBFMUMeGWpecA">20 关 · 已过 6</span>
+          </button>
+          <button class="field" data-page-node-id="PulEec2WKO0GAXjozliK6W">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" data-page-node-id="SgMEiCvhQA5yr7uMFWfpAT">
+              <path d="M3 21.5l9.8-11.7L22 21.5H3z" fill="#7BB661" data-page-node-id="UmDguVS8NvCcjhtI2gknaE"/>
+              <circle cx="18.5" cy="7.5" r="3.25" fill="#A6E0A0" data-page-node-id="WY8uYSV0CvH7iJEAzClV1Q"/>
+            </svg>
+            <span class="nm" data-page-node-id="7ZA060D9tFIfWzXYLxVCeQ">图形山谷</span>
+            <span class="ct num" data-page-node-id="TKZgOoSropAPIeVVZbRg3M">14 关 · 已过 3</span>
+          </button>
+          <button class="field" data-page-node-id="F5GlVmp14IXeYIDd1oGUFu">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" data-page-node-id="AUBqYLs7kpR9q5ykqZz4Qv">
+              <circle cx="13" cy="13" r="10.3" fill="#FFC857" data-page-node-id="0VHXKUiATYtG6kUAOlFzAh"/>
+              <path d="M13 6.5v7.1h4.3" stroke="#B45309" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="rwSxkAM1e4pClFghw9im5R"/>
+            </svg>
+            <span class="nm" data-page-node-id="4AB0jeBz73HWTp8VDWE4rA">单位王国</span>
+            <span class="ct num" data-page-node-id="X7uaVsJ0UMJBG0Y5FPhQcU">12 关 · 已过 4</span>
+          </button>
+          <button class="field" data-page-node-id="Sa9qHYZK75U0BZ4nfe4Oh6">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" data-page-node-id="jB0Fd8QTFBMsZTOVrleBBD">
+              <path d="M13 3.2l6.5 8.6H6.5L13 3.2z" fill="#FF8C7A" data-page-node-id="UsgcoIzjjNWCfyWrF2DNr6"/>
+              <rect x="11.9" y="13.5" width="2.2" height="6.5" fill="#B45309" data-page-node-id="Y58x5MDydJp0wHEeNvuLWg"/>
+            </svg>
+            <span class="nm" data-page-node-id="2dv2zszYHfIhaN4YfRYg0H">智慧森林</span>
+            <span class="ct num" data-page-node-id="kr6hMf9TrPvWjeb8iMtrWP">14 关 · 已过 6</span>
+          </button>
+        </div>
+
+        <!-- 当前航线 -->
+        <div class="card" data-page-node-id="jB7DN3cCYRupW8KP5wWIa4">
+          <div class="sec-head" data-page-node-id="kw6UKPAlLcnbQjWtdWcIng">
+            <span class="route-title" data-page-node-id="FP4RK9Hsc9BeRi5T9zBOyp">当前航线 · 计算城堡</span>
+            <span class="sec-count num" data-page-node-id="UGFD3kTDaCNqdOvRe9tSe9">6 / 20</span>
+          </div>
+          <div class="route-row" data-page-node-id="hReaCcjopTkgCiqL9nvkBp">
+            <div class="node done" data-page-node-id="FMYWuqhD07Hpy3MIkQpmKb">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" data-page-node-id="pnGoiVpfcjipLir8SoC0oK"><path d="M5 12.5l4.5 4.5L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="e2hPUuKJyLABtBn8zc1Aoq"/></svg>
+            </div>
+            <div class="link" data-page-node-id="iBx40Lx6l6Fx8ikvRybH5a"></div>
+            <div class="node done" data-page-node-id="A0GYrG4nlwjdAP5y5wq81p">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" data-page-node-id="zkKneMfTCkhdQjBLeiRYRa"><path d="M5 12.5l4.5 4.5L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="0FPE5UxMijsMFonsY4HnPK"/></svg>
+            </div>
+            <div class="link" data-page-node-id="6SptEK9S1xTND0p14BGea8"></div>
+            <div class="node now" data-page-node-id="UCiKmZyzfqFpcPVfPHV8Wg"><span class="nb num" data-page-node-id="i0KpoQoq9oerAu5FRToqq6">7</span></div>
+            <div class="link" data-page-node-id="2wDA5COnVfECq9CCVuxvTT"></div>
+            <div class="node lock" data-page-node-id="Y2TnwubTSN5A4ce32EVBuR">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" data-page-node-id="FcqZqfO2szUwNswIadPapn">
+                <rect x="4.6" y="10" width="12.8" height="9.2" rx="2.3" fill="#B4AE9E" data-page-node-id="4Jf6uhrq6eibivHTobDBxT"/>
+                <path d="M7.8 10V7.4a3.2 3.2 0 0 1 6.4 0V10" stroke="#B4AE9E" stroke-width="1.9" data-page-node-id="6xnu7Ao1gU1g9z0mDeR1ya"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- 本册关卡 -->
+        <div class="card" data-page-node-id="2toKiSsZNcGXHyahOVocQr">
+          <div class="sec-head" data-page-node-id="dgB9bUMsJi5ltGGbZkvfA7">
+            <span class="route-title" data-page-node-id="RaaxmGGs0TxJAqE7eY7x0A">本册关卡</span>
+            <button class="link-more" data-page-node-id="mFrAWjX76a0xkFwk4FCHht">查看全部</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;" data-page-node-id="vEDQMsxzOSxnq8tJu9pouR">
+            <div class="lv-row" data-page-node-id="9p4sTXQXmm8my3VsyxPV93">
+              <div class="dot done" data-page-node-id="8ECGA55lV0d1MiO6Sg7LrF"></div>
+              <div class="lv-col" data-page-node-id="8dlOHnyGU9OMdaY2PCaNmI">
+                <span class="lv-name" data-page-node-id="4wLfO6L4gQSSzKkPVGxKOJ">倍的认识</span>
+                <span class="lv-meta" data-page-node-id="BTIbwyiJFxs0Y8ClLvsflG">第 5 单元 · 模型思想 · 3 题</span>
+              </div>
+            </div>
+            <div class="lv-row" data-page-node-id="8BgE4RnWiwqCYVq1B0FYga">
+              <div class="dot done" data-page-node-id="GI7YxkyDOB012xSVkm7f9X"></div>
+              <div class="lv-col" data-page-node-id="P5edRJSchL55UEjbK4ZfZd">
+                <span class="lv-name" data-page-node-id="JZW9pJj75KzZ9Q9S7q280g">多位数乘一位数</span>
+                <span class="lv-meta" data-page-node-id="58zsIcwiKy9iTbQly4DqH8">第 6 单元 · 转化思想 · 3 题</span>
+              </div>
+            </div>
+            <div class="lv-row cur" onclick="go('quest')" style="cursor:pointer;" data-page-node-id="JleQlk5w3PfHorYHaZXfGq">
+              <div class="dot cur" data-page-node-id="znCTz4rO1uXWwaWdw1Fq4M"></div>
+              <div class="lv-col" data-page-node-id="DAdhCHq3VxnQCXJPpRCN4l">
+                <span class="lv-name" data-page-node-id="uIeX2OXcBZCrV4Ot09kuYu">长方形和正方形</span>
+                <span class="lv-meta" data-page-node-id="tklDFJ6OuVdl6k6BpHx8CH">第 7 单元 · 数形结合 · 9 题</span>
+              </div>
+            </div>
+            <div class="lv-row" data-page-node-id="6zHEg1oYwj3lHG8oF8DBu8">
+              <div class="dot lock" data-page-node-id="KXeWtRyANSYHuTmSNncDbd"></div>
+              <div class="lv-col" data-page-node-id="YfGFUF1XsRnFxo57VpCkYi">
+                <span class="lv-name dim" data-page-node-id="gGReOwPLYGeFtLvoFrh2Zd">分数的初步认识</span>
+                <span class="lv-meta dim" data-page-node-id="dEuTrmQqge8C7EAk8CT1H0">第 8 单元 · 数形结合 · 2 题</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabbar" data-page-node-id="s9XBGCrnZae7BuuZdhhuSh">
+        <div class="tabpill" data-page-node-id="qvCUvwpyPa2NRL7JhjI93g">
+          <button class="tab on" data-tab="home" data-page-node-id="iNU2guVc7xMyUeI4eQjZes">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="Ldi6DwiotQs3o1ZyOBRbPL"><path d="M9 1.2c-2.6 0-4.7 2.1-4.7 4.7 0 3.4 4.7 10.9 4.7 10.9s4.7-7.5 4.7-10.9c0-2.6-2.1-4.7-4.7-4.7z" stroke="#2D2A26" stroke-width="1.5" data-page-node-id="BPX8nYMMNoRd1Ebu0Ty1D9"/><circle cx="9" cy="5.9" r="1.95" stroke="#2D2A26" stroke-width="1.5" data-page-node-id="s0BlA7YolyZ1YNHLzw42oO"/></svg>
+            <span class="lb" data-page-node-id="NYRqygADjBIKLp1ZA7vFBM">冒险</span>
+          </button>
+          <button class="tab" data-tab="codex" data-page-node-id="lQEjIAO16Ik8i4ualv66g4">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="ryWXajBTs65RCruZm9MHJA"><path d="M3 2.2h9.5A2.5 2.5 0 0 1 15 4.7v11.1H5.5A2.5 2.5 0 0 1 3 13.3V2.2z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="0LhLP4hCB0PCaKZeEDnW2C"/><path d="M6 6.2h6M6 9.2h6" stroke="#5C5147" stroke-width="1.5" stroke-linecap="round" data-page-node-id="0bYyS0oQrGw4WzvqjdDUW0"/></svg>
+            <span class="lb" data-page-node-id="w2TY9yJ2tmV0EwnLGzE0SB">图鉴</span>
+          </button>
+          <button class="tab" data-tab="diary" data-page-node-id="7FlMGc4OKhMOeFUBA5NI4O">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="sg6B57CdOwd22ZXWKzfNv4"><path d="M4.2 1.8h9.6v14.4H4.2z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="dEyqV65JdT0LMY7w3QpOpL"/><path d="M6.6 6h4.8v1.8H6.6z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="dLMvnFNfEFcWenlGDZ2KBZ"/></svg>
+            <span class="lb" data-page-node-id="t2oAOK7dFkCLAzsCepkhCt">日记</span>
+          </button>
+          <button class="tab" data-tab="parent" data-page-node-id="yHRJbBc8uK9ac95jRJRIvV">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="hgt5aLqVM8UW23DX6oJImt"><path d="M9 1.5l6.2 2.3v5.1c0 4-2.6 6.9-6.2 8.1-3.6-1.2-6.2-4.1-6.2-8.1V3.8L9 1.5z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="Su4cBmHfTmzCzeAVmLKAFg"/><path d="M6.3 9.1l1.9 1.9 3.5-3.7" stroke="#5C5147" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="EVBD3IONOMSOOvTTlhBeL4"/></svg>
+            <span class="lb" data-page-node-id="Gvz4J3d1XUK3XUtBxuawU7">家长</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ S3 闯关答题 ============ -->
+    <section class="screen" id="quest" data-page-node-id="KtK6ajDwMrG9gfufMNRUcI">
+      <div class="statusbar" data-page-node-id="pEUU9v1Auq8aPrTc5aYTA8">
+        <span class="sb-time num" data-page-node-id="ISLmxwUCOXfZkpvuE39TT2">9:41</span>
+        <div class="sb-icons" data-page-node-id="Lr4CrymF6JMsBpjYRF3UAc">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="G0jjDtKBSLVKMD7gSgrlBP">
+            <rect x="0.5" y="11" width="3" height="6" rx="1" fill="#2D2A26" data-page-node-id="vjfVHIj0HZRikX6mTIk75o"/><rect x="5.5" y="8" width="3" height="9" rx="1" fill="#2D2A26" data-page-node-id="o65oa1uU1vlfpp7bmQz40g"/><rect x="10.5" y="4.75" width="3" height="12.5" rx="1" fill="#2D2A26" data-page-node-id="RCwKqs3v0IwBkInkoKhsCw"/><rect x="15" y="1.5" width="3" height="16" rx="1" fill="#2D2A26" data-page-node-id="WEEiNASfht8VOp4Ou62VWS"/>
+          </svg>
+          <svg width="20" height="18" viewBox="0 0 20 18" fill="none" data-page-node-id="7VDZqi5i1c8rAiHPoBAhGE">
+            <path d="M1 6.4C3.6 4.1 6.7 3 10 3s6.4 1.1 9 3.4" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="QnNB2Qjf45wtHKpvEq2e25"/><path d="M4.4 9.6C6.1 8.3 8 7.6 10 7.6s3.9.7 5.6 2" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="xt0sT8pFcxMKYxU6dHnwKg"/><circle cx="10" cy="14.6" r="1.7" fill="#2D2A26" data-page-node-id="WOpazrtzys9VGS1WFn0hVa"/>
+          </svg>
+          <svg width="26" height="14" viewBox="0 0 26 14" fill="none" data-page-node-id="vmNXQoCME6EeVQCalzUwf7">
+            <rect x="0.6" y="0.6" width="22" height="12.8" rx="3.5" stroke="#2D2A26" stroke-opacity="0.35" stroke-width="1.2" data-page-node-id="1qVgfXjNdlHzXYMJCE57Bk"/><rect x="2.2" y="2.2" width="16" height="9.6" rx="2" fill="#2D2A26" data-page-node-id="wFVJ63PeOfOmRJH17OXtr2"/><path d="M24 4.8v4.4a2.2 2.2 0 0 0 0-4.4z" fill="#2D2A26" fill-opacity="0.35" data-page-node-id="VASwaWE9861a8FFNSsjkPg"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="content gap-10" data-page-node-id="qUc2PcPPxqw8yn72UwB7Gx">
+        <!-- 顶栏 -->
+        <div class="q-top" data-page-node-id="61wh5ciA2nfELDyHos1NWH">
+          <button class="q-back" onclick="go('map')" data-page-node-id="JnIIhbrlPDoCa9EJqdj2JE">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="xEqWbnnoUmnPi4RG73ajvF"><path d="M11 1.5L4 9l7 7.5" stroke="#2D2A26" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="RtJBPwFTdq5AUo8Kjd0RCR"/></svg>
+          </button>
+          <span class="q-title" data-page-node-id="ugRDhBGCO7AIAEL3rG0m9k">闯关 · 倍的认识</span>
+          <span class="timer-pill" data-page-node-id="PCE9Q1VyigybOI6vlGi9KX">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" data-page-node-id="To7kCKTub8dyWnJjQjCgD2">
+              <circle cx="6.5" cy="6.5" r="4.9" stroke="#B45309" stroke-width="1.3" data-page-node-id="JQJlb3Tdw59QsyIErNueuW"/>
+              <path d="M6.5 3v3.6h2.4" stroke="#B45309" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="kKP6S5yCt6M7g6CNkfAgg5"/>
+            </svg>
+            <span class="num" id="timer" data-page-node-id="8vuD0wMyihHqiZpfoZjieM">24:36</span>
+          </span>
+        </div>
+
+        <!-- 步骤进度 -->
+        <div class="step-row" data-page-node-id="os4qwCBn34IZAkczBUH7Ke">
+          <span class="step-label" data-page-node-id="hD9AClyNP4rJc12W5AnBT0">第 <span id="stepNo" data-page-node-id="H3wAgfGTe7OHQ8sU4K5SsZ">4</span> 步 / 共 7 步</span>
+          <div class="step-track" data-page-node-id="qBwnD7wGqeGWPAWhvHcKQD"><div class="step-fill" id="stepFill" style="width:57%" data-page-node-id="cpnMqKB8xOjDWqhBcPIJta"></div></div>
+        </div>
+
+        <!-- 题目卡 -->
+        <div class="q-card" data-page-node-id="JmV8GWW4ZFo9NwrvowqmX0">
+          <span class="step-tag" id="stepTag" data-page-node-id="pp1XC9TXOVUORd4BkzEIKm">讲方法 · 说出你的思路</span>
+          <span class="q-text" data-page-node-id="L3IIcMKTGR2BUTi6bsDQe8">妈妈买了 3 盒饼干，每盒 8 块，平均分给 4 个小朋友，每人能分到几块？</span>
+          <div class="q-img" id="qImg" style="display:none;" data-page-node-id="P51B7uqLLke96APvCFGPiQ">题目配图 · 线段图 / 小棒图</div>
+        </div>
+
+        <!-- 对话气泡 -->
+        <div class="bubble-row" data-page-node-id="8Hk6mQfXHIwNU6DVEvEM0s">
+          <div class="tutor" data-page-node-id="K1kFO5aip5HnGSjDZG4hjD">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="TRDJ2uEs7jJn0kkeJl6bA3">
+              <circle cx="9" cy="6" r="3.4" fill="#fff" data-page-node-id="C2CG5TO7wUiWbAHgQjhqsI"/>
+              <path d="M2.6 16c0-3.5 2.9-5.4 6.4-5.4S15.4 12.5 15.4 16" fill="#fff" data-page-node-id="JlCH8HbNBVzEsExyZNm8o6"/>
+            </svg>
+          </div>
+          <div class="bubble" id="bubble" data-page-node-id="1Ds56atkYwj5HhXLVvHjcs">那我们一起想：要知道每人分几块，得先算出一共有多少块饼干，对吗？</div>
+        </div>
+
+        <!-- 输入区 -->
+        <div class="answer-box" data-page-node-id="HTcwErhPBudRN6k75HH6KR">
+          <span class="ans-label" data-page-node-id="MWDZBdzJSl70HaOwYPIKHm">你的回答</span>
+          <span class="ans-text ph" id="ansText" data-page-node-id="sIRt1UDN1jSRdBAcTDKfYL">用键盘、语音或手写写下你的思路</span>
+          <div class="ans-hint" data-page-node-id="EQpV4MYyTBrMPHnOOyH6C7">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" data-page-node-id="lPsjh7OAfoHJDit7fF3vS2">
+              <rect x="5.25" y="0.6" width="3.5" height="6.4" rx="1.75" stroke="#8A7F70" stroke-width="1.17" data-page-node-id="M9IxFOspdtnD6J1ssRRqkd"/>
+              <path d="M2.9 6.9a4.1 4.1 0 0 0 8.2 0" stroke="#8A7F70" stroke-width="1.17" stroke-linecap="round" data-page-node-id="zl84JmHuH97nzTY9yElEJ2"/>
+              <path d="M7 11v2.4" stroke="#8A7F70" stroke-width="1.17" stroke-linecap="round" data-page-node-id="bxYBg00eLSYpG5Tsw66jV7"/>
+            </svg>
+            <span data-page-node-id="Pbs21oCaRtSCR0pht51O1C">按住说话 · 或在草稿区手写</span>
+          </div>
+        </div>
+
+        <div class="spacer" data-page-node-id="yUSir3hiKH9RpiFBMQDGE8"></div>
+
+        <!-- 数字键盘 -->
+        <div class="keypad" data-page-node-id="0BopN3rL5geDpB4PWE9lGN">
+          <div class="krow" data-page-node-id="mQvoPIqYGVAD8NDgm94G8V">
+            <button class="key num" onclick="press('7')" data-page-node-id="bA8G16Jr4PM1J6kSPj0k6M">7</button>
+            <button class="key num" onclick="press('8')" data-page-node-id="wDty7lajwA9DR5bHsSfrva">8</button>
+            <button class="key num" onclick="press('9')" data-page-node-id="Pfihw2r8AI7QdK6OHIQ1Y9">9</button>
+            <button class="key op" onclick="press(' ÷ ')" data-page-node-id="hWFKc8jH8wevon8cB0VzXi">÷</button>
+          </div>
+          <div class="krow" data-page-node-id="9PSaU9ZTvvAsLv2eTnUPjT">
+            <button class="key num" onclick="press('4')" data-page-node-id="zFzB4jYfbmcmqZPNIx0KBe">4</button>
+            <button class="key num" onclick="press('5')" data-page-node-id="i87zPR0AtWML9U3W0EI19p">5</button>
+            <button class="key num" onclick="press('6')" data-page-node-id="BjjiIgP7RetNAlz0Bo3efy">6</button>
+            <button class="key op" onclick="press(' × ')" data-page-node-id="SJcrOfO6zn08GqFURXvJeM">×</button>
+          </div>
+          <div class="krow" data-page-node-id="4OpQ5cqW7vjuN2zelFXFKn">
+            <button class="key num" onclick="press('1')" data-page-node-id="ZvF22S9RLzFAW2RgcPzcco">1</button>
+            <button class="key num" onclick="press('2')" data-page-node-id="SIRrRwUZU3ZthiEs7p9mop">2</button>
+            <button class="key num" onclick="press('3')" data-page-node-id="aK4QxQpLJ2k5FAnQWBBVBk">3</button>
+            <button class="key op" onclick="press(' − ')" data-page-node-id="27Yvosg7XGVtj2RJpBfxjO">−</button>
+          </div>
+          <div class="krow" data-page-node-id="caEn3WLP3x4W18gdEmaJxU">
+            <button class="key fn" onclick="backspace()" data-page-node-id="6LKvjPAlU8tgzNXTcI5TRv">删除</button>
+            <button class="key num" onclick="press('0')" data-page-node-id="A7mPeuPejGYC9HvnMxZlrk">0</button>
+            <button class="key num" onclick="press('.')" data-page-node-id="bx3vIanvnoJN0nBKg9BCAO">.</button>
+            <button class="key op" onclick="press(' + ')" data-page-node-id="4lrUOFRJXPzb6VKhO0LJN1">+</button>
+          </div>
+        </div>
+
+        <!-- 底部操作行 -->
+        <div class="act-row" data-page-node-id="oeHSGVnjGGSmsVqqAwdcN1">
+          <button class="act-sub" data-page-node-id="ZK3M48sgukpwA7nDwRoik8">草稿纸</button>
+          <button class="act-sub" data-page-node-id="Kr4lxBy2HrSPTckvBtyy5L">要提示</button>
+          <button class="act-main" id="nextBtn" onclick="nextStep()" data-page-node-id="IWevaAubh4CN7Be4B3bUYn">下一步</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ S4 闯关结算 ============ -->
+    <section class="screen" id="result" data-page-node-id="t8vcOVTco3MMTmUukPZ0fG">
+      <div class="statusbar" data-page-node-id="r44CSaEJMPWDEG5sEdmxqO">
+        <span class="sb-time num" data-page-node-id="USm2Cg7ntGIb4kx8MXF2H8">9:41</span>
+        <div class="sb-icons" data-page-node-id="lH4r0xWh9sDBLPmtNeRCck">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="lap7HotMhcXLNgmeyB2I1Y">
+            <rect x="0.5" y="11" width="3" height="6" rx="1" fill="#2D2A26" data-page-node-id="G3jWib2k9K49yUK3NZLb0C"/><rect x="5.5" y="8" width="3" height="9" rx="1" fill="#2D2A26" data-page-node-id="xyfejYZXPKB38SbIpWawVk"/><rect x="10.5" y="4.75" width="3" height="12.5" rx="1" fill="#2D2A26" data-page-node-id="gmNbhuvQay2yOJOzmnu5Eg"/><rect x="15" y="1.5" width="3" height="16" rx="1" fill="#2D2A26" data-page-node-id="pkAjdkvlGdoWtVaDJfQy8A"/>
+          </svg>
+          <svg width="20" height="18" viewBox="0 0 20 18" fill="none" data-page-node-id="VF4ylXDbo6POjIwVYOwMXW">
+            <path d="M1 6.4C3.6 4.1 6.7 3 10 3s6.4 1.1 9 3.4" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="8VuSXYkrab1TcqImjJsMJq"/><path d="M4.4 9.6C6.1 8.3 8 7.6 10 7.6s3.9.7 5.6 2" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="Ovt0o9fCDxWXahC9wn9xjz"/><circle cx="10" cy="14.6" r="1.7" fill="#2D2A26" data-page-node-id="xm9p2bmZrulokVoomNuGjl"/>
+          </svg>
+          <svg width="26" height="14" viewBox="0 0 26 14" fill="none" data-page-node-id="IgBbpSzs5EYekjBuLhsss1">
+            <rect x="0.6" y="0.6" width="22" height="12.8" rx="3.5" stroke="#2D2A26" stroke-opacity="0.35" stroke-width="1.2" data-page-node-id="MKEKG1DFZOadAFuWANHkBB"/><rect x="2.2" y="2.2" width="16" height="9.6" rx="2" fill="#2D2A26" data-page-node-id="pCIz0pZhiiTRPs91R0Cqj3"/><path d="M24 4.8v4.4a2.2 2.2 0 0 0 0-4.4z" fill="#2D2A26" fill-opacity="0.35" data-page-node-id="OWFpWP1LAgI4XKAcBNeEZN"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="content gap-14" data-page-node-id="SjDDmDOm9JsDLMeiQTHUfU">
+        <div class="res-top" data-page-node-id="lc2f1LgUT8V1U4Fr2J8rxO">
+          <div class="spacer" data-page-node-id="GcZel0oDCenxHmXWTK9WRh"></div>
+          <button class="close-btn" onclick="go('map')" data-page-node-id="BdoIEDYVWI9Z386OF2RqiK">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" data-page-node-id="57ZEMtWyFC2Qh8rtbVHHs9">
+              <path d="M7 7l14 14M21 7L7 21" stroke="#5C5147" stroke-width="2.8" stroke-linecap="round" data-page-node-id="Rt5msdya8wNy49Ht5Jirmq"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="celebrate" data-page-node-id="lsTHxgzCEO3fCmU0gbPERU">
+          <div class="badge" data-page-node-id="CFvKwguTVvJnPVn3BMQlns">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" data-page-node-id="a089N9NZ1mDVAho4V993jJ">
+              <path d="M24 3l6.1 13.1L44 18l-10 9.6 2.6 14.3L24 34.8 11.4 41.9 14 27.6 4 18l13.9-1.9L24 3z" fill="#fff" data-page-node-id="UHzMZ3hMBuCFC7UvlOcaBH"/>
+            </svg>
+          </div>
+          <span class="res-title" data-page-node-id="liMxu8hIiI1CwMQOZ20I6b">闯关成功！</span>
+          <span class="res-sub" data-page-node-id="X6BIGw1Npram9vLmJu6zsj">倍的认识 · 8 题全部答对 · 用时 6 分 12 秒</span>
+          <div class="stars" data-page-node-id="EIlqQODPBpAMOPDoq5rOaG">
+            <svg class="star" width="28" height="28" viewBox="0 0 28 28" fill="none" data-page-node-id="ukF2rkzlh57MevDiVtbLTP">
+              <path d="M14 1.5l3.8 8.4 9.2 1-6.8 6.3 1.8 9.1L14 22l-8 4.3 1.8-9.1L1 10.9l9.2-1L14 1.5z" fill="#FFC857" data-page-node-id="3GmDuA3QN91z0o0IHEb9xN"/>
+            </svg>
+            <svg class="star" width="28" height="28" viewBox="0 0 28 28" fill="none" data-page-node-id="aCMdDNopWjexQi3oCfsZEC">
+              <path d="M14 1.5l3.8 8.4 9.2 1-6.8 6.3 1.8 9.1L14 22l-8 4.3 1.8-9.1L1 10.9l9.2-1L14 1.5z" fill="#FFC857" data-page-node-id="Ety4FQpR21WNXvY6Ce1fi1"/>
+            </svg>
+            <svg class="star" width="28" height="28" viewBox="0 0 28 28" fill="none" data-page-node-id="S5Cz4R9QUGW9oMJ8vQSGmg">
+              <path d="M14 1.5l3.8 8.4 9.2 1-6.8 6.3 1.8 9.1L14 22l-8 4.3 1.8-9.1L1 10.9l9.2-1L14 1.5z" fill="#E5D198" data-page-node-id="ZbgmibiG2wFuJEgTKv7AqM"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card" data-page-node-id="a2mMVUtDMGFesn0KJF6VR6">
+          <div class="sec-head" data-page-node-id="he28GAAP2m9tTYu4tTp0cQ">
+            <span style="font-size:14px;font-weight:600;color:var(--ink);" data-page-node-id="YFu8p1N6tKi6GqnSteCLWx">本次获得</span>
+            <span class="num" style="font-size:16px;font-weight:700;color:var(--amber);" data-page-node-id="iPiedNpAmQxDTysE5jWTyz">+ 10 EXP</span>
+          </div>
+          <div class="exp-track" data-page-node-id="YuZdDY3LoGyAOm51gFJoXu"><div class="exp-fill" id="resFill" style="width:0%" data-page-node-id="ROt7WVEHUC7d7fwAXgp2ag"></div></div>
+          <span style="font-size:11px;color:var(--ink-2);" data-page-node-id="ZlWk118ouyN7okswi4sH2s">距离 Lv.8 还差 70 点经验</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;background:var(--tag-model);border-radius:var(--r-md);padding:14px;" data-page-node-id="E1fqzkbXWYj520H5Sd0fXF">
+          <div style="width:44px;height:44px;border-radius:22px;background:var(--orange);display:flex;align-items:center;justify-content:center;flex-shrink:0;" data-page-node-id="8HggcQk7b6Cmgh2C3iMiHG">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" data-page-node-id="PZvRmmNl6hreFdJhVcgVxS">
+              <path d="M4 2.5h12.5A3.5 3.5 0 0 1 20 6v15.5H7.5A3.5 3.5 0 0 1 4 18V2.5z" fill="#fff" data-page-node-id="HsAvBxN9eEloWCHd5nrwGS"/>
+              <path d="M8 8h8" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" data-page-node-id="I7hACVqxCI2GxRrrVT6J9V"/>
+              <path d="M8 12h8" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" data-page-node-id="tTO44GQqJNmaoc0lfdhmQx"/>
+            </svg>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;" data-page-node-id="wpANcnKKkN0XuTfKKehjCk">
+            <span style="font-size:14px;font-weight:700;color:var(--amber);" data-page-node-id="Z202G8LYMjD5gFKsNWVW2e">点亮思想印记 · 模型思想</span>
+            <span style="font-size:12px;color:var(--brown);" data-page-node-id="Y3AT3dokVNNQv5EONYuBip">套路书 · 已收集 5 / 15 枚</span>
+          </div>
+        </div>
+
+        <div class="card" data-page-node-id="URl1phnE5WFDfg0PaY0TrK">
+          <span style="font-size:14px;font-weight:700;color:var(--ink);" data-page-node-id="ehrXZBReD8VoDogtNj4Vq6">这次用上了什么魔法？（可多选）</span>
+          <div class="magic-grid" data-page-node-id="V7rVQdIlBiSbafyZIqOYi0">
+            <button class="magic" onclick="this.classList.toggle('on')" data-page-node-id="r04VverZURkOgqKNbrBN9z">画了线段图</button>
+            <button class="magic on" onclick="this.classList.toggle('on')" data-page-node-id="Z4TaNkyDHhD56yI1GVx8Gs">套用了老模型</button>
+            <button class="magic" onclick="this.classList.toggle('on')" data-page-node-id="iQSlWuwgP9m58GALtWAXSt">一步一步推理</button>
+            <button class="magic" onclick="this.classList.toggle('on')" data-page-node-id="Nsgx4PjyMI5yxKMZeLIDpj">设了未知数</button>
+          </div>
+        </div>
+
+        <div class="spacer" data-page-node-id="yJOMPtr7WOjfxXRyZF7KbU"></div>
+
+        <div class="res-actions" data-page-node-id="rXsCfpjZCGWejCulKsgMO9">
+          <button class="btn-dark" onclick="go('quest')" data-page-node-id="EF59lRXM4D4TR9MjMJsgKv">再练一题</button>
+          <button class="btn-dark alt" onclick="go('map')" data-page-node-id="uv8EgGWcpSGAB2VOakVOlO">回到地图</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ S5 怪兽图鉴 ============ -->
+    <section class="screen" id="codex" data-page-node-id="QDSAC9EUOCYkxpzgwlGufx">
+      <div class="statusbar" data-page-node-id="6T6Ggzt78ChteoP58zAGqU">
+        <span class="sb-time num" data-page-node-id="hLpmqPu3W1MR1cU7JOBJHC">9:41</span>
+        <div class="sb-icons" data-page-node-id="pNwET6yLyZTEZvP1NSraLj">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="TiQcDTqILfO9SW3HtYunuI">
+            <rect x="0.5" y="11" width="3" height="6" rx="1" fill="#2D2A26" data-page-node-id="xfLRHG90kzdUoJcqrdTlSq"/><rect x="5.5" y="8" width="3" height="9" rx="1" fill="#2D2A26" data-page-node-id="TmGj4qpcls4EfFPCNsNLlk"/><rect x="10.5" y="4.75" width="3" height="12.5" rx="1" fill="#2D2A26" data-page-node-id="prUZN7a67VkSFeWQY4P48N"/><rect x="15" y="1.5" width="3" height="16" rx="1" fill="#2D2A26" data-page-node-id="9MdVEJ72djHoyOUDlyxCAn"/>
+          </svg>
+          <svg width="20" height="18" viewBox="0 0 20 18" fill="none" data-page-node-id="qIGlJ5eSSlHk47l3VE5xOF">
+            <path d="M1 6.4C3.6 4.1 6.7 3 10 3s6.4 1.1 9 3.4" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="mftUtCtEsfA2AFMQiDkSHN"/><path d="M4.4 9.6C6.1 8.3 8 7.6 10 7.6s3.9.7 5.6 2" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="CCMSFYS2eHTJhOVaGxKvRv"/><circle cx="10" cy="14.6" r="1.7" fill="#2D2A26" data-page-node-id="b0NiLbYvW1gAi1kmC1WwCZ"/>
+          </svg>
+          <svg width="26" height="14" viewBox="0 0 26 14" fill="none" data-page-node-id="8Llc0MfdCgcgMo4wf85ziL">
+            <rect x="0.6" y="0.6" width="22" height="12.8" rx="3.5" stroke="#2D2A26" stroke-opacity="0.35" stroke-width="1.2" data-page-node-id="KqabMBG1a8XQhZs88x9lyl"/><rect x="2.2" y="2.2" width="16" height="9.6" rx="2" fill="#2D2A26" data-page-node-id="hAIbCIRWA5GHgzIUgXcRLQ"/><path d="M24 4.8v4.4a2.2 2.2 0 0 0 0-4.4z" fill="#2D2A26" fill-opacity="0.35" data-page-node-id="k4tbZbPJD6jSsdRpBPtVuB"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="content gap-12 with-tab" data-page-node-id="TEAtfi4rBx2ZHIDcFFTAkq">
+        <span class="page-title" data-page-node-id="Qs2ZD8tg5pXKPgYsOboxha">怪兽图鉴</span>
+        <span class="page-sub" data-page-node-id="Pq6Ajii1hJkKSelTRHkJ17">每打败一只怪兽，就改掉一个坏习惯</span>
+
+        <div class="seg" data-page-node-id="8XFk3dutm2kqpiSZ2XhF6A">
+          <button class="on" onclick="switchSeg(this,'codexView')" data-page-node-id="7nH1xAuUUt3X9OGD9xfPt0">图鉴</button>
+          <button onclick="switchSeg(this,'wrongView')" data-page-node-id="5SC4oyWfUXiLTeTIsf30VD">错题本</button>
+        </div>
+
+        <!-- 图鉴视图 -->
+        <div id="codexView" style="display:flex;flex-direction:column;gap:12px;" data-page-node-id="uA5kGDdfYUGn1nTtfhhhJw">
+          <div class="mon-grid" data-page-node-id="mPhGHBeeMLFH3StaI3gDLR">
+            <!-- 怪兽卡：统一形状，不同主色 -->
+            <div class="mon" data-page-node-id="Hirx7KQH7IFoLkXQvILU3H">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" data-page-node-id="FA7P820HZg1jXA1sExjDl5">
+                <rect x="5.5" y="8.8" width="33" height="23.8" rx="11" fill="#5DADE2" data-page-node-id="1bDdCOBU7RfFbCkJGygBlY"/>
+                <rect x="1.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#5DADE2" data-page-node-id="PqDuyBlSscL1LFDT2YzplZ"/>
+                <rect x="37.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#5DADE2" data-page-node-id="LA6uB9MEU4KGhPi0pmnCLD"/>
+                <circle cx="16.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="8SPigsO9dXJYlga1bhw16o"/><circle cx="27.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="aiuDMDINgf4pjnvBKYUBZa"/>
+                <circle cx="16.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="XBbKMOJeqbnKBfr03k1kvn"/><circle cx="27.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="3zYyDXVaF5fHl2xT3DzwwF"/>
+                <rect x="15.6" y="28.2" width="12.8" height="2.93" rx="1.47" fill="#fff" data-page-node-id="JhJzx0SiKolJyulsAoFfa6"/>
+              </svg>
+              <span class="nm" data-page-node-id="fbOr7jcfRtVSe0CTZ0Ar7K">粗心怪</span>
+              <span class="ds" data-page-node-id="5PhWxLGzcJKxHWBfGIBbDW">趁你抄数字时搞破坏</span>
+              <span class="st num" style="color:var(--m-careless)" data-page-node-id="ICAOp6u41hjPsgYniSCDry">遇到 12 · 击败 7</span>
+            </div>
+            <div class="mon" data-page-node-id="Q1XYM6axc5aoUKNlHuUPRG">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" data-page-node-id="7kjDZEdmEFdEm7Byil5KKP">
+                <rect x="5.5" y="8.8" width="33" height="23.8" rx="11" fill="#E67E22" data-page-node-id="Q2gpaERVJhK1CagyYZDOyf"/>
+                <rect x="1.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#E67E22" data-page-node-id="7RCubFhyVWUwKyisqMfCC9"/>
+                <rect x="37.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#E67E22" data-page-node-id="jqM1dpGVhNwvS2CZABP0Rq"/>
+                <circle cx="16.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="AKG838oRLk58neUDQRph2a"/><circle cx="27.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="3lfJVZhW2KxkBqRpbk1Ki8"/>
+                <circle cx="16.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="tpWSxi3WhWeXwt7JvFANqq"/><circle cx="27.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="APV1VCuiFC1Nmg8lTJpZGX"/>
+                <rect x="15.6" y="28.2" width="12.8" height="2.93" rx="1.47" fill="#fff" data-page-node-id="91En83hb2KVZQVSJEAFEhc"/>
+              </svg>
+              <span class="nm" data-page-node-id="iakpsfDwU245AdOwRQypcI">计算怪</span>
+              <span class="ds" data-page-node-id="VWhF2Yv6NhjqeF1IHw1Ozi">偷偷把你的答案改掉</span>
+              <span class="st num" style="color:var(--m-calc)" data-page-node-id="co8L4KU4gOq4Da3j9KOI0l">遇到 20 · 击败 11</span>
+            </div>
+            <div class="mon" data-page-node-id="GUmkDKyIOiYXy7ehZ519hO">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" data-page-node-id="taYlpZrcQaiqPzrn9ftkfA">
+                <rect x="5.5" y="8.8" width="33" height="23.8" rx="11" fill="#8E44AD" data-page-node-id="Hw59JDfQdbCVBDJ2mrWbCd"/>
+                <rect x="1.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#8E44AD" data-page-node-id="Bokhyh05i5EHSuusdXm2bJ"/>
+                <rect x="37.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#8E44AD" data-page-node-id="5HPNWZkXMILsknOR10Kzmd"/>
+                <circle cx="16.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="CRnz5MBBDaS2jwQ2CStGX1"/><circle cx="27.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="tjGQ2jGUN4BB7hVCnc4o24"/>
+                <circle cx="16.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="9LdBbFdH0Qv18ZhZz5u0sU"/><circle cx="27.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="uK2fDVi6sach6jBBNok6sg"/>
+                <rect x="15.6" y="28.2" width="12.8" height="2.93" rx="1.47" fill="#fff" data-page-node-id="QFAQ80KhgnPjpxaUwHrQua"/>
+              </svg>
+              <span class="nm" data-page-node-id="VbYhZJgkUJV0tyVpcqwExt">读题怪</span>
+              <span class="ds" data-page-node-id="czRhn48UT3aEN1PryTeEyC">把题目条件搅得乱七八糟</span>
+              <span class="st num" style="color:var(--m-reading)" data-page-node-id="qTD50YOA0cWc75DW1G1APv">遇到 8 · 击败 3</span>
+            </div>
+            <div class="mon" data-page-node-id="Cc9KpcItodBFcqZXaMYgdU">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" data-page-node-id="xofBoYlYMEitsPRsYJJmuA">
+                <rect x="5.5" y="8.8" width="33" height="23.8" rx="11" fill="#16A085" data-page-node-id="NNBlZRP8knXS7uIypBe8IE"/>
+                <rect x="1.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#16A085" data-page-node-id="1HYRkzSCKxTxmYrV1ksxXl"/>
+                <rect x="37.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#16A085" data-page-node-id="oxPBysYhzQmu5FFnen3NYi"/>
+                <circle cx="16.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="X4wufexdMxx066Ipwj2xzV"/><circle cx="27.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="UnTRtQruOJAoQJewWZYzvP"/>
+                <circle cx="16.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="6dsahgbdzMsoRLA4TvFSeV"/><circle cx="27.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="DPTIKzpdXQlXZOW92BROKZ"/>
+                <rect x="15.6" y="28.2" width="12.8" height="2.93" rx="1.47" fill="#fff" data-page-node-id="eWXm0FBaWiOHaR3smLoF6O"/>
+              </svg>
+              <span class="nm" data-page-node-id="j7HNtCE7qhT2JSRmltZHm0">单位怪</span>
+              <span class="ds" data-page-node-id="nA3PZpfCLVt7WK4LoDwJqN">让你把米和厘米写反</span>
+              <span class="st num" style="color:var(--m-unit)" data-page-node-id="8uDSUHAi0pZAGwboSUDfy3">遇到 5 · 击败 2</span>
+            </div>
+            <div class="mon" data-page-node-id="DVDhgdoEPKGJ7I6BN6kWXq">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" data-page-node-id="4pK0MnqOpyAJXi3CoFMg6b">
+                <rect x="5.5" y="8.8" width="33" height="23.8" rx="11" fill="#D35400" data-page-node-id="JIGHAWGnr27PF7wO1YqjhW"/>
+                <rect x="1.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#D35400" data-page-node-id="IH0se30WTME4k5o5hB72DQ"/>
+                <rect x="37.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#D35400" data-page-node-id="QSl1jFN5rSyq9wz6HXCNiT"/>
+                <circle cx="16.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="SGcHzEPGRXgQnpGuC1Rcak"/><circle cx="27.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="GsiJje9XG5J8mZiLsap1VZ"/>
+                <circle cx="16.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="79KmJgDLuwRFQR1O751rTk"/><circle cx="27.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="pkhzAwbOgcM9bqrDzdLQ7q"/>
+                <rect x="15.6" y="28.2" width="12.8" height="2.93" rx="1.47" fill="#fff" data-page-node-id="JTtuyVBxPFjAE8oHAbtntQ"/>
+              </svg>
+              <span class="nm" data-page-node-id="YJByGTuSvUYrzRcww7iQhw">概念怪</span>
+              <span class="ds" data-page-node-id="uv98FXlLnjcU4MXSMtcEtp">把周长和面积混在一起</span>
+              <span class="st num" style="color:var(--m-concept)" data-page-node-id="aTNSzaCbN8fNi3ut9QXsPH">遇到 9 · 击败 4</span>
+            </div>
+            <div class="mon" data-page-node-id="5muOpjdW7bWd32M2U91bm1">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" data-page-node-id="hyjeKURkngydlO15iMz7Jz">
+                <rect x="5.5" y="8.8" width="33" height="23.8" rx="11" fill="#2980B9" data-page-node-id="elahpZLmV03VAEGnFBJFAq"/>
+                <rect x="1.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#2980B9" data-page-node-id="fA13hVhZGqLaHTzAfXobw2"/>
+                <rect x="37.6" y="19.8" width="4.8" height="11" rx="2.4" fill="#2980B9" data-page-node-id="KBzQ5ECKB4KtnCYY6xYnbW"/>
+                <circle cx="16.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="1QC1SbiiOhpYKBNm6CmUBl"/><circle cx="27.5" cy="19.5" r="4.03" fill="#fff" data-page-node-id="1IzllhsV7krFPkD9rkKryc"/>
+                <circle cx="16.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="k4V8tGEGZmR8W4o5s3yRSY"/><circle cx="27.5" cy="19.5" r="2.02" fill="#2D2A26" data-page-node-id="zHTRGQVIQSUAGvpCTMZBik"/>
+                <rect x="15.6" y="28.2" width="12.8" height="2.93" rx="1.47" fill="#fff" data-page-node-id="cIQe2DttPnFOtQh2ToSFFf"/>
+              </svg>
+              <span class="nm" data-page-node-id="gemqSxdlRaMgp49Uf6uiSy">检查怪</span>
+              <span class="ds" data-page-node-id="p4099N8o0JZwdtBSDIs90L">总是催你快点交卷</span>
+              <span class="st num" style="color:var(--m-check)" data-page-node-id="DvDELbuYtyGKYe1VG8FJRR">遇到 6 · 击败 1</span>
+            </div>
+          </div>
+
+          <div class="tip-card" data-page-node-id="gGWVIPrx3uMJJMvQFPa9al">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" data-page-node-id="Gp75WuQOjAnmacObO4dmmG">
+              <circle cx="12" cy="11" r="7" fill="#F59E0B" data-page-node-id="diWCf3GOUMENclIYz1Nnxn"/>
+              <rect x="9.5" y="18" width="5" height="3" rx="1.5" fill="#B45309" data-page-node-id="nrff1h3cBzrP51MI89eDBM"/>
+              <rect x="10.5" y="21" width="3" height="2" rx="1" fill="#B45309" data-page-node-id="cDRC7Zy8Wjojh2tjhjzuzp"/>
+            </svg>
+            <div class="tip-col" data-page-node-id="abALH9VLauTIHoFucg2749">
+              <span class="tip-t" data-page-node-id="EZo7c284gXY42T0Z66p62V">本周最常遇到：计算怪</span>
+              <span class="tip-d" data-page-node-id="CDF4MriidbAVuyON9YFPuu">算完后倒着再算一遍，减法用加法验算</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 错题本视图 -->
+        <div id="wrongView" style="display:none;flex-direction:column;gap:12px;" data-page-node-id="Q7q6ByYlet0G6KBxMa6pid">
+          <div class="wrong-row" data-page-node-id="WdqGFWWe5kL2nwMkaJqgcY">
+            <div class="wrong-badge" style="background:var(--m-calc)" data-page-node-id="Wf0J47AyNz141JalY9cYBD">计算</div>
+            <div class="wrong-col" data-page-node-id="2WIsSYCqPUaeuJ11w0cUH3">
+              <span class="wrong-q" data-page-node-id="NYiQWNFVoInbbtQWRPfzLQ">3 盒饼干每盒 8 块，分给 4 人，每人几块？</span>
+              <span class="wrong-m" data-page-node-id="S2cek4HOBIhohMAw464fN0">错在：24 ÷ 4 算成了 8 · 今天 19:24</span>
+            </div>
+          </div>
+          <div class="wrong-row" data-page-node-id="bvQwHDorNTlD7X74neRzMR">
+            <div class="wrong-badge" style="background:var(--m-unit)" data-page-node-id="uCjjklbVKMAEeuBPx9n2ck">单位</div>
+            <div class="wrong-col" data-page-node-id="VoBb1nEOTW0PwoSn9X9Rjq">
+              <span class="wrong-q" data-page-node-id="AiJKDRD2HDFc2QIhGy2D7W">教室长 8 米，合多少厘米？</span>
+              <span class="wrong-m" data-page-node-id="bXwUQudKlDBlO7A0VZaoKw">错在：进率记错 · 昨天 20:03</span>
+            </div>
+          </div>
+          <div class="wrong-row" data-page-node-id="mYdoNMS5JsGKuJNiT2XSbc">
+            <div class="wrong-badge" style="background:var(--m-concept)" data-page-node-id="kogtRz4fNskmRhyIHJvAC9">概念</div>
+            <div class="wrong-col" data-page-node-id="7uCyKdAPWU1upoJ82FmZiu">
+              <span class="wrong-q" data-page-node-id="IeAKgDKY5AfPNPzsQlAf8T">长 5 宽 3 的长方形，周长和面积各是多少？</span>
+              <span class="wrong-m" data-page-node-id="L2rervWkWI3rc15x2gdg8y">错在：周长面积公式混用 · 昨天 19:47</span>
+            </div>
+          </div>
+          <div class="wrong-row" data-page-node-id="XodM0qaOfDXR4ZnOa1aBpm">
+            <div class="wrong-badge" style="background:var(--m-reading)" data-page-node-id="gAKPtqdbYnnOAwxfrC142b">读题</div>
+            <div class="wrong-col" data-page-node-id="J7L0NpPlSXBgat4spsoiSC">
+              <span class="wrong-q" data-page-node-id="Zmcf5F7oW3WWeVoTUJKrfM">比 36 多 15 的数是多少？</span>
+              <span class="wrong-m" data-page-node-id="z1D2cQHECYQ6dR69NCc1mG">错在：看成"少 15" · 9 月 2 日</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabbar" data-page-node-id="l6sPLmwCrdsg1KjdmMTz0R">
+        <div class="tabpill" data-page-node-id="qruD0G49E2EouFPzgfbqJe">
+          <button class="tab" data-tab="home" data-page-node-id="WAZclTsi7GRJRY3M8Pidye">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="FGPGjrUk5YGojVjXG9XDp9"><path d="M9 1.2c-2.6 0-4.7 2.1-4.7 4.7 0 3.4 4.7 10.9 4.7 10.9s4.7-7.5 4.7-10.9c0-2.6-2.1-4.7-4.7-4.7z" stroke="#2D2A26" stroke-width="1.5" data-page-node-id="Enu81HExEQrGdpLDtSAAPK"/><circle cx="9" cy="5.9" r="1.95" stroke="#2D2A26" stroke-width="1.5" data-page-node-id="On4YSAuyn2ezDG9oEZRYXW"/></svg>
+            <span class="lb" data-page-node-id="nNRyonujk7bkngEil6SGk4">冒险</span>
+          </button>
+          <button class="tab on" data-tab="codex" data-page-node-id="bDEERfJrn9t3YLIELyAwfY">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="MBZscceGtiNrfOREDKWZCd"><path d="M3 2.2h9.5A2.5 2.5 0 0 1 15 4.7v11.1H5.5A2.5 2.5 0 0 1 3 13.3V2.2z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="HZWqmaDlS02BMVJLbJSGP6"/><path d="M6 6.2h6M6 9.2h6" stroke="#5C5147" stroke-width="1.5" stroke-linecap="round" data-page-node-id="FWHZDqGvqsudqBzrRHBwxR"/></svg>
+            <span class="lb" data-page-node-id="DObUuOCdVHQBPnIdcOc49i">图鉴</span>
+          </button>
+          <button class="tab" data-tab="diary" data-page-node-id="cyFWk2bIeZODCACvwYJL6N">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="qaeSjfaVLOsXKQZl6BXiGO"><path d="M4.2 1.8h9.6v14.4H4.2z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="tPgWYd8QC6LkQJVIZoeEjw"/><path d="M6.6 6h4.8v1.8H6.6z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="GxLBUod5ylGXH0suOUJIgn"/></svg>
+            <span class="lb" data-page-node-id="GZOx1i3PPaodu5rE2eFFHb">日记</span>
+          </button>
+          <button class="tab" data-tab="parent" data-page-node-id="CgOEvgZFjwUVk62JXUrwP1">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="f2vYVsPVX8aG2hJUWeqp0U"><path d="M9 1.5l6.2 2.3v5.1c0 4-2.6 6.9-6.2 8.1-3.6-1.2-6.2-4.1-6.2-8.1V3.8L9 1.5z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="skzYnokA2xNCLiVT178zAM"/><path d="M6.3 9.1l1.9 1.9 3.5-3.7" stroke="#5C5147" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="9QwC1luAJlgQoS2otXAanU"/></svg>
+            <span class="lb" data-page-node-id="xKDvpzZQnkBh0DX0GmDJqL">家长</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 日记页（沿用同套设计令牌） ============ -->
+    <section class="screen" id="diary" data-page-node-id="b9UnNcZghBuQ44VehprWKU">
+      <div class="statusbar" data-page-node-id="k6FpfSNEEIIrOIhGbHMhI3">
+        <span class="sb-time num" data-page-node-id="XIyS7aQJLrMi3T1c4Kontz">9:41</span>
+        <div class="sb-icons" data-page-node-id="Ly2TUPymaSOYeIFFsICVQb">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="coM0KGVPgfmEnErz8kCEZL">
+            <rect x="0.5" y="11" width="3" height="6" rx="1" fill="#2D2A26" data-page-node-id="SoKhIBSdqBxzzpYGNjOBEB"/><rect x="5.5" y="8" width="3" height="9" rx="1" fill="#2D2A26" data-page-node-id="NXm7VbPjwHhiGHyRCBdLFn"/><rect x="10.5" y="4.75" width="3" height="12.5" rx="1" fill="#2D2A26" data-page-node-id="ShE76VpaF3PPRFKLMo1Q31"/><rect x="15" y="1.5" width="3" height="16" rx="1" fill="#2D2A26" data-page-node-id="VyuIY6VzAmTsEeW7hWjCR0"/>
+          </svg>
+          <svg width="20" height="18" viewBox="0 0 20 18" fill="none" data-page-node-id="MFGL5d8trJ4zUgxCdlMq1c">
+            <path d="M1 6.4C3.6 4.1 6.7 3 10 3s6.4 1.1 9 3.4" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="hVXjAep1dfJ52JnUKNYKIw"/><path d="M4.4 9.6C6.1 8.3 8 7.6 10 7.6s3.9.7 5.6 2" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="sbfWHgUvyEyOoC2XQ2AlPX"/><circle cx="10" cy="14.6" r="1.7" fill="#2D2A26" data-page-node-id="n0V1wRDbDHlCdw33GXRsEG"/>
+          </svg>
+          <svg width="26" height="14" viewBox="0 0 26 14" fill="none" data-page-node-id="e29CstGBV8TW3cqys4tznS">
+            <rect x="0.6" y="0.6" width="22" height="12.8" rx="3.5" stroke="#2D2A26" stroke-opacity="0.35" stroke-width="1.2" data-page-node-id="nbBdUM3DRv5xv4PPZUOTY2"/><rect x="2.2" y="2.2" width="16" height="9.6" rx="2" fill="#2D2A26" data-page-node-id="7bhqcltBqfAJUGe5Aa8HHm"/><path d="M24 4.8v4.4a2.2 2.2 0 0 0 0-4.4z" fill="#2D2A26" fill-opacity="0.35" data-page-node-id="4afpasuFs6MaDPgurNtpM1"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="content gap-12 with-tab" data-page-node-id="dKTawhMwlX5pn5qw5PZiHs">
+        <span class="page-title" data-page-node-id="GczhNyKuhJiJ7YxofQBHjK">闯关日记</span>
+        <span class="page-sub" data-page-node-id="XnBgG4Gd5caE7WfHAjeBqQ">记下今天用过的办法，下次遇到就不慌了</span>
+
+        <div class="diary-card" data-page-node-id="NfCYmUKREMA4xQ9Jjtlxod">
+          <div class="diary-head" data-page-node-id="RVWTweOtMg4jt3R75r4zlS">
+            <span class="diary-date" data-page-node-id="dJDQz4Kryadc4AVkp8Wcjl">今天 · 19:24</span>
+            <span class="mini-tag" style="background:var(--tag-model);color:var(--amber);" data-page-node-id="YaeKvSC4CcWfSllXiSXaF7">模型思想</span>
+          </div>
+          <span class="diary-lv" data-page-node-id="aGl0tNV7ecQCfy9iUazATG">倍的认识</span>
+          <span class="diary-note" data-page-node-id="XR9CvfwJavknTvE21x4Ad1">先算总数 3 × 8 = 24，再平均分 24 ÷ 4 = 6。这类"先合再分"的题可以套这个老模型。</span>
+          <div class="tag-row" data-page-node-id="bnBXcfQC9N9KP6l8Uqdeeo">
+            <span class="mini-tag" style="background:var(--tag-numshape);color:var(--blue);" data-page-node-id="mWDDFYOa8JiidB5dW6XOl3">画了线段图</span>
+            <span class="mini-tag" style="background:var(--tag-transform);color:var(--teal);" data-page-node-id="BdgDRChd3BzWaqMGKWmkEB">套用了老模型</span>
+          </div>
+        </div>
+
+        <div class="diary-card" data-page-node-id="Y8zBfdLWhqFI79QXUHAUQu">
+          <div class="diary-head" data-page-node-id="Nn6de9kDBUo9qF63jQ37nY">
+            <span class="diary-date" data-page-node-id="yX7MmczWJVyT7ATLO8vwT4">昨天 · 20:03</span>
+            <span class="mini-tag" style="background:var(--tag-reason);color:var(--orange-dd);" data-page-node-id="S3EGuFZlVJIouNKc4ZZkk6">逻辑推理</span>
+          </div>
+          <span class="diary-lv" data-page-node-id="uAnsY74EWE6Z0NhYl7XOtZ">长方形和正方形</span>
+          <span class="diary-note" data-page-node-id="hSNV7xAuWsFp4cJEpegYdO">周长是"绕一圈"，面积是"铺满面"。我把手指沿着边走一圈，就不会混了。</span>
+          <div class="tag-row" data-page-node-id="X2kQzbcAqy49OdAwLtsG7O">
+            <span class="mini-tag" style="background:var(--tag-reason);color:var(--orange-dd);" data-page-node-id="5Ad6AmFl86RNuw5xa4g7GS">一步一步推理</span>
+          </div>
+        </div>
+
+        <div class="diary-card" data-page-node-id="UUiQBJMyFBB0BSFGpUVswZ">
+          <div class="diary-head" data-page-node-id="epqUA2PFAQHU7FG6nfO7pk">
+            <span class="diary-date" data-page-node-id="C7E4YEbDLbU9GS39wKkRCa">9 月 2 日 · 19:47</span>
+            <span class="mini-tag" style="background:var(--tag-equation);color:var(--purple);" data-page-node-id="iwiSrynGbE1cufAvIUfOYa">符号方程</span>
+          </div>
+          <span class="diary-lv" data-page-node-id="WI1ZnnTItCgRBaZ7Cyzlms">多位数乘一位数</span>
+          <span class="diary-note" data-page-node-id="58JWWywxZGjm5kYFd3yMFC">把 24 × 3 拆成 20 × 3 + 4 × 3，大数变小数，算得快还不容易错。</span>
+          <div class="tag-row" data-page-node-id="HdbJ1PrGOdFqWst41wN9FQ">
+            <span class="mini-tag" style="background:var(--tag-transform);color:var(--teal);" data-page-node-id="FK3kj45reC56AqgOr900yS">转化思想</span>
+            <span class="mini-tag" style="background:var(--tag-numshape);color:var(--blue);" data-page-node-id="2iHV2ZODYpqr4uzFDN572b">画了线段图</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabbar" data-page-node-id="I4Osha8b4R4b13SmMlCQ55">
+        <div class="tabpill" data-page-node-id="rQlmfD2TbMUyRVpLgmJfQX">
+          <button class="tab" data-tab="home" data-page-node-id="9cXmVLeJEXFkhxLOg9Fo9F">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="rnttGFbtgHJVnHNmrFu6Km"><path d="M9 1.2c-2.6 0-4.7 2.1-4.7 4.7 0 3.4 4.7 10.9 4.7 10.9s4.7-7.5 4.7-10.9c0-2.6-2.1-4.7-4.7-4.7z" stroke="#2D2A26" stroke-width="1.5" data-page-node-id="1LdZG3bEBAYZZHEYrHStWS"/><circle cx="9" cy="5.9" r="1.95" stroke="#2D2A26" stroke-width="1.5" data-page-node-id="AcIR2UynQd54ydDA5K4GPg"/></svg>
+            <span class="lb" data-page-node-id="wSVZ6NC4BigeEuDkbo8SEZ">冒险</span>
+          </button>
+          <button class="tab" data-tab="codex" data-page-node-id="2eMXy9oYkg0uvSz9rjxcKX">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="G4hAYxayy1DUWKg8fjISJD"><path d="M3 2.2h9.5A2.5 2.5 0 0 1 15 4.7v11.1H5.5A2.5 2.5 0 0 1 3 13.3V2.2z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="DE316xV9cjg3cBy2TZg9wq"/><path d="M6 6.2h6M6 9.2h6" stroke="#5C5147" stroke-width="1.5" stroke-linecap="round" data-page-node-id="8Z5cDgSN4g711vUzFK1CCF"/></svg>
+            <span class="lb" data-page-node-id="V11FzJyyh3MgN9qxAYex3n">图鉴</span>
+          </button>
+          <button class="tab on" data-tab="diary" data-page-node-id="zD8pMlrcFAfXzZHnFRLtUb">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="AG1L9VITIdmQL4guRFGhAt"><path d="M4.2 1.8h9.6v14.4H4.2z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="JDzEXq5T45AisEQ9tjR3z5"/><path d="M6.6 6h4.8v1.8H6.6z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="gHjFvCs2QcFrGVj6mqPCNB"/></svg>
+            <span class="lb" data-page-node-id="Kxez11zSABIhP1EQYCCXjI">日记</span>
+          </button>
+          <button class="tab" data-tab="parent" data-page-node-id="eJiWlQvggByhUalANyMWHX">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="PccGqXvdtiIOGhIwGhtP3f"><path d="M9 1.5l6.2 2.3v5.1c0 4-2.6 6.9-6.2 8.1-3.6-1.2-6.2-4.1-6.2-8.1V3.8L9 1.5z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="TpzVmaw3c4Hfcdhm8M54e4"/><path d="M6.3 9.1l1.9 1.9 3.5-3.7" stroke="#5C5147" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="TQ9pUTOpaNH0OwbGSdf7bv"/></svg>
+            <span class="lb" data-page-node-id="e51FxXjBFwM5WiRkpM767c">家长</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ S6 家长中心 ============ -->
+    <section class="screen" id="parent" data-page-node-id="sVqnYRZvvBWg4pIoRzaVuW">
+      <div class="statusbar" data-page-node-id="nO6buvp25yzDj8ATSWvMa2">
+        <span class="sb-time num" data-page-node-id="oP3ZaV4x5SvPTVyr1T3EGt">9:41</span>
+        <div class="sb-icons" data-page-node-id="D6Iqa5CNCFPktP3axreK3W">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="SnEkKIS0S5iMQmz1UkFdTk">
+            <rect x="0.5" y="11" width="3" height="6" rx="1" fill="#2D2A26" data-page-node-id="LrljMgcfRjQmSOCSMKBlUS"/><rect x="5.5" y="8" width="3" height="9" rx="1" fill="#2D2A26" data-page-node-id="RwYFB3csmeJwoZK7KcZi8Y"/><rect x="10.5" y="4.75" width="3" height="12.5" rx="1" fill="#2D2A26" data-page-node-id="4phsa9xazFBFXEiAaSskZC"/><rect x="15" y="1.5" width="3" height="16" rx="1" fill="#2D2A26" data-page-node-id="9MIRlqf3OFovrbUhqQ7nZm"/>
+          </svg>
+          <svg width="20" height="18" viewBox="0 0 20 18" fill="none" data-page-node-id="q88HWQ6MkyV0kNmOqogOBK">
+            <path d="M1 6.4C3.6 4.1 6.7 3 10 3s6.4 1.1 9 3.4" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="u6MhIKbHPjJTH4OkjbpXKb"/><path d="M4.4 9.6C6.1 8.3 8 7.6 10 7.6s3.9.7 5.6 2" stroke="#2D2A26" stroke-width="2" stroke-linecap="round" data-page-node-id="Qr3n7hSOOfKoeiXoz6WSa8"/><circle cx="10" cy="14.6" r="1.7" fill="#2D2A26" data-page-node-id="ktERRreDD5pWRS7GP404Dw"/>
+          </svg>
+          <svg width="26" height="14" viewBox="0 0 26 14" fill="none" data-page-node-id="nS5cCijBDPzxQ7X31KfOwA">
+            <rect x="0.6" y="0.6" width="22" height="12.8" rx="3.5" stroke="#2D2A26" stroke-opacity="0.35" stroke-width="1.2" data-page-node-id="SvhEGia2MXKmNMdxbbMUmz"/><rect x="2.2" y="2.2" width="16" height="9.6" rx="2" fill="#2D2A26" data-page-node-id="alN2w40l9kMxFudDnPcpAu"/><path d="M24 4.8v4.4a2.2 2.2 0 0 0 0-4.4z" fill="#2D2A26" fill-opacity="0.35" data-page-node-id="WL1MGRYeoP3hFevB2DFBlF"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="content gap-12 with-tab" data-page-node-id="v0PhnkAbJFOmC7odOhHqG7">
+        <!-- 页头 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;" data-page-node-id="X2X3XpBIXBXJjSJbgxMk6s">
+          <div style="display:flex;flex-direction:column;gap:2px;" data-page-node-id="JjYXiaOSZNOFUn6W0BoFAV">
+            <span class="page-title" data-page-node-id="snk1eqbBw1yEKtEEYXUVCA">家长中心</span>
+            <span class="page-sub" data-page-node-id="TyGL70kQfxSk2xpsaBketH">已开启密码锁 · 上次同步 今天 08:12</span>
+          </div>
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" data-page-node-id="CE2rF3bVDEgIgHOEOnSRig">
+            <path d="M13 4.2l7.6 3v6.2c0 4.9-3.2 8.5-7.6 9.9-4.4-1.4-7.6-5-7.6-9.9V7.2l7.6-3z" fill="#FFC857" data-page-node-id="obeACpDQHhjUNWRYUErW0s"/>
+            <circle cx="13" cy="13.6" r="3.2" fill="#FFFAF0" data-page-node-id="AHozD4mfXm4YlQucHnrTlL"/>
+          </svg>
+        </div>
+
+        <!-- 本周概览 -->
+        <div class="card" data-page-node-id="1ZD6hjcuLK4bPcnD9cnh02">
+          <span style="font-size:15px;font-weight:700;color:var(--ink);" data-page-node-id="t46nuAPMD5RFdfTFhgB7Sc">本周学习概览</span>
+          <div class="overview-row" data-page-node-id="mbsh9RqPyhOVEDrEDLZ6hi">
+            <div class="stat" data-page-node-id="WAXEcTH8T9lcX9xRlQAJe3"><span class="v num" style="color:var(--amber)" data-page-node-id="nDBV11n33tVOh8dc9EYf1C">5</span><span class="l" data-page-node-id="6I4tH8KH7U3WqFAWKnVuPg">练习天数</span></div>
+            <div class="stat" data-page-node-id="DMRuiAkMzBOzlhLgykymbQ"><span class="v num" style="color:var(--green-d)" data-page-node-id="nOLPfF1TKa25hrjwbNdZxo">78%</span><span class="l" data-page-node-id="GEYHU4yFE6MGKbtBPEKL5F">答对率</span></div>
+            <div class="stat" data-page-node-id="p1jJvvYIM1MT52Rpk3nl6E"><span class="v num" style="color:var(--blue-5)" data-page-node-id="AHIvUvFZhaLFVQDWmA3RBO">42</span><span class="l" data-page-node-id="5vqEA7dTje3z1CLxBgBVs7">掌握关卡</span></div>
+          </div>
+        </div>
+
+        <!-- 学习设置 -->
+        <div class="card" data-page-node-id="0SFLJlbZUpjyFJVDtPAmNH">
+          <span style="font-size:15px;font-weight:700;color:var(--ink);" data-page-node-id="vvxsGDNMnxIN7Yk20lkEeq">学习设置</span>
+          <div class="set-row" data-page-node-id="TYDHNhkZWtyqBy35S9FDkC">
+            <span class="set-label" data-page-node-id="JfFGKj86UNIRNrcSAqoq54">每日限时 25 分钟</span>
+            <button class="switch" onclick="this.classList.toggle('off')" data-page-node-id="9o1MAQrsuCwkNbTgloKbq4"><span class="knob" data-page-node-id="3tPs1p6AUK8uibsYtpPG2v"></span></button>
+          </div>
+          <div class="set-row" data-page-node-id="gv3w1tQ9JbpgKkBLxUhL3H">
+            <span class="set-label" data-page-node-id="40zIvyLUWWsYwsW4C06o17">护眼休息提醒</span>
+            <button class="switch" onclick="this.classList.toggle('off')" data-page-node-id="dPlz3FvuUXBafo7yvCBGtT"><span class="knob" data-page-node-id="jmuBmisa35IRTCoUsbDuF7"></span></button>
+          </div>
+        </div>
+
+        <!-- AI 模型配置（来自桌面端"大模型设置"，移动端做完整面板） -->
+        <div class="card ai-card" data-page-node-id="K8m3X9Lp2Nv7Rq1">
+          <div class="ai-head" data-page-node-id="H8n4Y0Mp3Ow8Sr2">
+            <span style="font-size:15px;font-weight:700;color:var(--ink);" data-page-node-id="T9o5Z1Nq4Px9Ts3">AI 模型配置</span>
+            <span class="ai-badge" data-page-node-id="B0p6A2Or5Qy0Ut4"><span class="ai-dot" data-page-node-id="D1q7B3Ps6Rz1Vu5"></span>DeepSeek V3 已连接</span>
+          </div>
+          <span class="ai-sub" data-page-node-id="S2r8C4Qt7S2Wv6">用于 AI 陪练追问与思路点评 · API Key 仅保存在本机</span>
+
+          <div class="set-row" data-page-node-id="T3s9D5Ru8T3Xw7">
+            <span class="set-label" data-page-node-id="U4t0E6Sv9U4Yx8">启用 AI 陪练追问（需联网）</span>
+            <button class="switch" onclick="this.classList.toggle('off')" data-page-node-id="V5u1F7Tw0V5Zy9"><span class="knob" data-page-node-id="W6v2G8Ux1W6Az0"></span></button>
+          </div>
+
+          <div class="hair-line" data-page-node-id="X7w3H9Vy2X7B01"></div>
+
+          <div class="ai-field" onclick="openAIModal('model')" data-page-node-id="Y8x4I0Wz3Y8C12">
+            <span class="f-l" data-page-node-id="Z9y5J1X04Z9D23">模型</span>
+            <span class="f-v v-orange" data-page-node-id="A0z6K2Y15A0E34">DeepSeek V3   ›</span>
+          </div>
+          <div class="ai-field" onclick="openAIModal('base')" data-page-node-id="B1A7L3Z26B1F45">
+            <span class="f-l" data-page-node-id="C2B8M4057C2G56">接口地址</span>
+            <span class="f-v v-mono" data-page-node-id="D3C9N5168D3H67">api.deepseek.com   ›</span>
+          </div>
+          <div class="ai-field" onclick="openAIModal('key')" data-page-node-id="E4D0O6279E4I78">
+            <span class="f-l" data-page-node-id="F5E1P7380F5J89">API Key</span>
+            <span class="f-v v-mono" data-page-node-id="G6F2Q8491G6K90">sk-••••••••2Fa   ›</span>
+          </div>
+          <div class="ai-field" onclick="openAIModal('timeout')" data-page-node-id="H7G3R9502H7L01">
+            <span class="f-l" data-page-node-id="I8H4S0613I8M12">超时时间</span>
+            <span class="f-v" data-page-node-id="J9I5T1724J9N23">30 秒   ›</span>
+          </div>
+
+          <div class="hair-line" data-page-node-id="K0J6U2835K0O34"></div>
+
+          <div class="ai-btnrow" data-page-node-id="L1K7V3946L1P45">
+            <button class="btn-ghost" onclick="testAI(this)" data-page-node-id="M2L8W4057M2Q56">测试连接</button>
+            <button class="btn-solid" onclick="saveAI(this)" data-page-node-id="N3M9X5168N3R67">保存</button>
+          </div>
+
+          <div class="ai-status" data-page-node-id="O4N0Y6279O4S78">
+            <span class="ai-dot dot-on" data-page-node-id="P5O1Z7380P5T89"></span>
+            <span class="status-text" data-page-node-id="Q6P2A8491Q6U90">已保存 · 上次测试 09:15 通过 · 延迟 412ms</span>
+          </div>
+
+          <div class="ai-help" onclick="openAIModal('help')" data-page-node-id="R7Q3B9502R7V01">
+            <span class="help-i" data-page-node-id="S8R4C0613S8W12">i</span>
+            <span data-page-node-id="T9S5D1724T9X23">了解支持的模型与配置说明</span>
+          </div>
+        </div>
+
+        <!-- 题库与内容 -->
+        <div class="card" data-page-node-id="g2MFA5unaQg5pGGZJH18w2">
+          <span style="font-size:15px;font-weight:700;color:var(--ink);" data-page-node-id="eFHupYQ5nPPdADtyoW7STO">题库与内容</span>
+          <div class="bank-row" data-page-node-id="EnuZDCy0TbjjpzxjcUZ5sj">
+            <button class="bank-btn" style="background:var(--tag-numshape);color:var(--blue);" data-page-node-id="rLxZrMn6A231gtdlwKaWlf">自建题库 68 题</button>
+            <button class="bank-btn" style="background:var(--tag-equation);color:var(--purple);" data-page-node-id="pWjoQ1j3k7OhvJO82ML81h">AI 出题</button>
+          </div>
+        </div>
+
+        <!-- 云端同步 -->
+        <div class="sync-card" data-page-node-id="T0Jbp80SHtQbW05i1kVRUN">
+          <div class="sync-col" data-page-node-id="YsRinVV3JodlBnhKqfhD7F">
+            <span class="sync-t" data-page-node-id="puoxprAvkw1NZPzoikxE6O">云端进度同步</span>
+            <span class="sync-d" data-page-node-id="YjO5R2AqNbHZEFy05Cxa5E">手机与电脑进度互通 · 今天 08:12</span>
+          </div>
+          <button class="sync-btn" onclick="doSync(this)" data-page-node-id="Z65L6oLFKkRehUFTClZrEv">立即同步</button>
+        </div>
+      </div>
+
+      <div class="tabbar" data-page-node-id="Ow6V17Lylucsd3sinJIqBU">
+        <div class="tabpill" data-page-node-id="1qdWW8D4V6KUiDt9CmY0BD">
+          <button class="tab" data-tab="home" data-page-node-id="SQVrW72sVwLPqPSnQ7pFp6">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="pbYI1KsgBYL3bUt5fabglO"><path d="M9 1.2c-2.6 0-4.7 2.1-4.7 4.7 0 3.4 4.7 10.9 4.7 10.9s4.7-7.5 4.7-10.9c0-2.6-2.1-4.7-4.7-4.7z" stroke="#2D2A26" stroke-width="1.5" data-page-node-id="HLrrrR919JRxlA6EdOaGvk"/><circle cx="9" cy="5.9" r="1.95" stroke="#2D2A26" stroke-width="1.5" data-page-node-id="Mg1bTsLpFA2sF5muP0oxzC"/></svg>
+            <span class="lb" data-page-node-id="Lgvuol96niQbpfBmj0bZW9">冒险</span>
+          </button>
+          <button class="tab" data-tab="codex" data-page-node-id="KLpb50jrj5VRI3Q2Tgtb9m">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="7jLCHgpQdziSy9ZPh0FnGN"><path d="M3 2.2h9.5A2.5 2.5 0 0 1 15 4.7v11.1H5.5A2.5 2.5 0 0 1 3 13.3V2.2z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="O8iAaEbl9WEcZwKFbu0HiD"/><path d="M6 6.2h6M6 9.2h6" stroke="#5C5147" stroke-width="1.5" stroke-linecap="round" data-page-node-id="830nER6PKfBFK8RLFKmTbu"/></svg>
+            <span class="lb" data-page-node-id="pooKG86MsdXAPeFZpvGkIz">图鉴</span>
+          </button>
+          <button class="tab" data-tab="diary" data-page-node-id="NYiovem6fuHAx6tFeEWylO">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="HLG89VEEofGkc51EW4jg9J"><path d="M4.2 1.8h9.6v14.4H4.2z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="fJuJM3Q6RmB4gp4woT9Bf2"/><path d="M6.6 6h4.8v1.8H6.6z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="sFqeuWUIUBqWA0N1xLDUmN"/></svg>
+            <span class="lb" data-page-node-id="1v9oYkl95AiMOVHCkt0q9h">日记</span>
+          </button>
+          <button class="tab on" data-tab="parent" data-page-node-id="xp4fsNfRiHAprHPxpE0ybK">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" data-page-node-id="YVlArE7ZGnPlhPA7Bqpm2i"><path d="M9 1.5l6.2 2.3v5.1c0 4-2.6 6.9-6.2 8.1-3.6-1.2-6.2-4.1-6.2-8.1V3.8L9 1.5z" stroke="#5C5147" stroke-width="1.5" stroke-linejoin="round" data-page-node-id="iBA6QFB9bIDXGro7bTBA1Z"/><path d="M6.3 9.1l1.9 1.9 3.5-3.7" stroke="#5C5147" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="lQUIu2JrUwHdM3jp6uwmup"/></svg>
+            <span class="lb" data-page-node-id="NvkyJaBTfKdPtRcup4Wr9m">家长</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <p class="hint" data-page-node-id="aE7UD9Yq1JV8TRshN0Tatz">点击 Tab 切换页面 · 首页「开始闯关」→ 地图 → 点关卡进入答题 · 键盘输入后可走完 7 步到结算页</p>
+</div>
+
+<script>
+/* ============ 路由 ============ */
+const TAB_SCREENS = ['home','codex','diary','parent'];
+const NO_TAB = ['quest','result'];
+let current = 'home';
+
+function go(id){
+  if(id === current) return;
+  const el = document.getElementById(id);
+  if(!el) return;
+  document.getElementById(current).classList.remove('active','enter');
+  el.classList.add('active');
+  void el.offsetWidth;
+  el.classList.add('enter');
+  current = id;
+
+  // 所有 tabbar 显隐
+  document.querySelectorAll('.tabbar').forEach(tb=>{
+    tb.classList.toggle('hidden', NO_TAB.includes(id));
+  });
+  // 同步 tab 高亮
+  if(TAB_SCREENS.includes(id)){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.tab === id));
+  }
+  // 重置答题 / 结算动效
+  if(id === 'quest'){ resetQuest(); }
+  if(id === 'result'){ setTimeout(()=>{ document.getElementById('resFill').style.width='80%'; }, 260); }
+}
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=> go(t.dataset.tab));
+});
+
+/* ============ S5 分段切换 ============ */
+function switchSeg(btn, viewId){
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('codexView').style.display = viewId === 'codexView' ? 'flex' : 'none';
+  document.getElementById('wrongView').style.display = viewId === 'wrongView' ? 'flex' : 'none';
+}
+
+/* ============ S3 七步闯关 ============ */
+const STEPS = [
+  {tag:'读题目 · 把题目读清楚',  bubble:'不着急算，先把题目一字一句读明白，看看讲的是一件什么事。', img:true},
+  {tag:'找条件 · 圈出已知信息',  bubble:'题目里哪些数字是已经告诉我们的？把它们一个一个找出来。', img:false},
+  {tag:'找问题 · 明确要求什么',  bubble:'最后那个问号问的到底是什么？把它单独拎出来看。', img:false},
+  {tag:'讲方法 · 说出你的思路',  bubble:'那我们一起想：要知道每人分几块，得先算出一共有多少块饼干，对吗？', img:false},
+  {tag:'列算式 · 写出计算过程',  bubble:'把刚才说的方法写成算式，先算什么、再算什么，一步都不能跳。', img:false},
+  {tag:'回头检验 · 检查一遍',    bubble:'算完了别急着交——倒着算一遍，看看结果对不对得上。', img:false},
+  {tag:'做总结 · 记住这个套路',  bubble:'这道题用的是"先合再分"，下次遇到类似的题，你还会做了吗？', img:false}
+];
+let step = 3; // 默认展示第 4 步（与设计稿一致）
+let answer = '';
+
+function renderStep(){
+  document.getElementById('stepNo').textContent = step + 1;
+  document.getElementById('stepFill').style.width = ((step + 1) / 7 * 100) + '%';
+  document.getElementById('stepTag').textContent = STEPS[step].tag;
+  document.getElementById('bubble').textContent = STEPS[step].bubble;
+  document.getElementById('qImg').style.display = STEPS[step].img ? 'flex' : 'none';
+  const btn = document.getElementById('nextBtn');
+  btn.textContent = step === 6 ? '完成闯关' : '下一步';
+}
+function press(ch){
+  const t = document.getElementById('ansText');
+  if(t.classList.contains('ph')){ t.classList.remove('ph'); t.textContent=''; answer=''; }
+  answer += ch;
+  t.textContent = answer;
+}
+function backspace(){
+  answer = answer.replace(/\s*[+\-×÷]\s*$/,'').slice(0,-1);
+  const t = document.getElementById('ansText');
+  if(!answer){ t.classList.add('ph'); t.textContent='用键盘、语音或手写写下你的思路'; }
+  else t.textContent = answer;
+}
+function nextStep(){
+  if(step < 6){ step++; renderStep(); }
+  else { go('result'); }
+}
+function resetQuest(){
+  step = 3; answer = '';
+  const t = document.getElementById('ansText');
+  t.classList.add('ph'); t.textContent = '用键盘、语音或手写写下你的思路';
+  renderStep();
+}
+
+/* ============ S3 计时器 ============ */
+let sec = 24 * 60 + 36;
+setInterval(()=>{
+  if(current !== 'quest') return;
+  if(sec > 0) sec--;
+  const m = String(Math.floor(sec/60)).padStart(2,'0');
+  const s = String(sec%60).padStart(2,'0');
+  document.getElementById('timer').textContent = m + ':' + s;
+}, 1000);
+
+/* ============ S6 同步按钮 ============ */
+function doSync(btn){
+  const old = btn.textContent;
+  btn.textContent = '同步中…';
+  btn.style.opacity = '.7';
+  setTimeout(()=>{
+    btn.textContent = '已同步';
+    btn.style.opacity = '1';
+    document.querySelector('.sync-d').textContent = '手机与电脑进度互通 · 刚刚';
+    setTimeout(()=>{ btn.textContent = old; }, 1600);
+  }, 900);
+}
+
+/* ============ AI 模型配置：弹窗/测试/保存 ============ */
+const AI_MODEL_PRESETS = [
+  { id:'deepseek-v3', label:'DeepSeek V3',   base:'https://api.deepseek.com/v1' },
+  { id:'deepseek-r1', label:'DeepSeek R1',   base:'https://api.deepseek.com/v1' },
+  { id:'qwen-plus',   label:'通义千问 Plus', base:'https://dashscope.aliyuncs.com/compatible-mode/v1' },
+  { id:'glm-4.6',     label:'智谱 GLM-4.6',  base:'https://open.bigmodel.cn/api/paas/v4' },
+  { id:'gpt-4o-mini', label:'OpenAI GPT-4o-mini', base:'https://api.openai.com/v1' },
+  { id:'custom',      label:'自定义 OpenAI 兼容…', base:'' }
+];
+const AI_FIELDS = {
+  model:   { title:'选择模型',          kind:'model' },
+  base:    { title:'接口地址（API Base）', kind:'text',  placeholder:'https://api.deepseek.com/v1', current:'https://api.deepseek.com/v1' },
+  key:     { title:'API Key',           kind:'text',  placeholder:'sk-…',                current:'sk-DsKp9vMx72QrLwEn3TfB2Fa', masked:true },
+  timeout: { title:'超时时间（秒）',      kind:'text',  placeholder:'30',                 current:'30', numeric:true },
+  help:    { title:'支持与说明',          kind:'help' }
+};
+
+function openAIModal(kind){
+  const meta = AI_FIELDS[kind];
+  if(!meta) return;
+  let body = '';
+  if(meta.kind === 'model'){
+    body = `<div class="ai-modal-list">
+      ${AI_MODEL_PRESETS.map((p,i)=>`<button class="ai-preset ${i===0?'sel':''}" data-base="${p.base}" onclick="pickModel(this,'${p.label}')">${p.label}${p.base?`<span class="preset-base">${p.base.replace('https://','')}</span>`:''}</button>`).join('')}
+    </div>
+    <p class="ai-modal-tip">支持所有 OpenAI 兼容协议；切换模型后自动套用推荐 Base。</p>`;
+  } else if(meta.kind === 'text'){
+    body = `<label class="ai-input-lb">${meta.title}</label>
+    <input class="ai-input ${meta.masked?'masked':''}" id="aiInp" type="${meta.masked?'password':'text'}" value="${meta.current||''}" placeholder="${meta.placeholder||''}" ${meta.numeric?'inputmode="numeric"':''}>
+    <p class="ai-modal-tip">${meta.kind==='text'&&meta.masked?'脱敏显示，输入即覆盖保存。':'保存后下次启动自动加载。'}</p>`;
+  } else if(meta.kind === 'help'){
+    body = `<div class="ai-help-body">
+      <p>本应用 AI 陪练支持所有 <b>OpenAI 兼容协议</b>的接口，可对接：</p>
+      <ul>
+        <li>DeepSeek（推荐，便宜稳定）</li>
+        <li>智谱 GLM、通义千问、月之暗面 Kimi</li>
+        <li>OpenAI / Azure OpenAI</li>
+        <li>本地 Ollama / LM Studio（需打开外网映射）</li>
+      </ul>
+      <p>填写说明：</p>
+      <ul>
+        <li><b>API Key</b>：服务商的密钥，本机加密保存</li>
+        <li><b>接口地址</b>：通常以 <code>/v1</code> 结尾</li>
+        <li><b>超时时间</b>：超过该秒数放弃本次追问</li>
+      </ul>
+      <p class="ai-modal-tip">⚠ 请勿使用他人 Key，避免被滥用产生高额账单。</p>
+    </div>`;
+  }
+  showModal(meta.title, body, ()=>{
+    if(meta.kind === 'text'){
+      const v = (document.getElementById('aiInp')||{}).value;
+      return v && v.trim();
+    }
+    return null;
+  }, (val)=>{
+    if(meta.kind === 'text' && val){
+      const row = document.querySelector(`.ai-field[onclick*="${kind}"] .f-v`);
+      if(row){
+        if(meta.masked){
+          const tail = val.slice(-4);
+          row.textContent = `${val.slice(0,3)}••••••••${tail}   ›`;
+        } else {
+          row.textContent = `${val}   ›`;
+        }
+      }
+      flashStatus(`已保存「${meta.title}」`);
+    } else if(meta.kind === 'model'){
+      // model 选择已在 pickModel 里即时更新
+    }
+  });
+}
+
+function pickModel(btn,label){
+  document.querySelectorAll('.ai-preset').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  const base = btn.dataset.base || '';
+  const row = document.querySelector('.ai-field[onclick*="model"] .f-v');
+  if(row) row.textContent = `${label}   ›`;
+  const baseRow = document.querySelector('.ai-field[onclick*="base"] .f-v');
+  if(baseRow && base) baseRow.textContent = `${base.replace('https://','')}   ›`;
+  flashStatus(`模型已切换为「${label}」`);
+  setTimeout(closeModal, 600);
+}
+
+function testAI(btn){
+  const old = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '测试中…';
+  btn.style.opacity = '.7';
+  setTimeout(()=>{
+    btn.disabled = false;
+    btn.textContent = '✓ 连接成功';
+    btn.style.opacity = '1';
+    setTimeout(()=>{ btn.textContent = old; }, 1400);
+    flashStatus('连接成功 · 延迟 412ms', true);
+  }, 1200);
+}
+
+function saveAI(btn){
+  const old = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '保存中…';
+  btn.style.opacity = '.7';
+  setTimeout(()=>{
+    btn.disabled = false;
+    btn.textContent = '✓ 已保存';
+    btn.style.opacity = '1';
+    setTimeout(()=>{ btn.textContent = old; }, 1400);
+    flashStatus('已保存 · ' + new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}), true);
+  }, 800);
+}
+
+function flashStatus(text, persist){
+  const el = document.querySelector('.ai-status .status-text');
+  if(!el) return;
+  el.textContent = text;
+  el.style.color = persist ? 'var(--green-d)' : 'var(--amber)';
+  if(!persist){
+    setTimeout(()=>{
+      el.textContent = '已保存 · 上次测试 09:15 通过 · 延迟 412ms';
+      el.style.color = 'var(--green-d)';
+    }, 1600);
+  }
+}
+
+/* ============ 通用 Modal ============ */
+function showModal(title, body, onOk, onClose){
+  const wrap = document.createElement('div');
+  wrap.className = 'modal-back';
+  wrap.innerHTML = `<div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-hd"><span class="modal-t">${title}</span><button class="modal-x" onclick="closeModal()">×</button></div>
+    <div class="modal-bd">${body}</div>
+    <div class="modal-ft"><button class="btn-ghost" onclick="closeModal()">取消</button><button class="btn-solid" id="aiOk">确定</button></div>
+  </div>`;
+  document.body.appendChild(wrap);
+  setTimeout(()=>wrap.classList.add('open'), 10);
+  const ok = wrap.querySelector('#aiOk');
+  if(ok) ok.onclick = ()=>{
+    const val = onOk ? onOk() : null;
+    if(onClose) onClose(val);
+    if(!val) closeModal();
+  };
+  wrap.addEventListener('click', e=>{ if(e.target === wrap) closeModal(); });
+}
+function closeModal(){
+  document.querySelectorAll('.modal-back').forEach(m=>m.classList.remove('open'));
+  setTimeout(()=>document.querySelectorAll('.modal-back').forEach(m=>m.remove()), 220);
+}
+
+/* 初始化 */
+renderStep();
+</script>
+</body>
+</html>

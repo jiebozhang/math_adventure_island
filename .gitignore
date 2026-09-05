@@ -1,0 +1,27 @@
+# Build outputs
+build/
+.gradle/
+.gradle_temp/
+.kotlin/
+
+# Local config (contains secrets)
+local.properties
+.env
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Keystore (debug keystore is committed for convenience)
+my-upload-key.jks
+
+# WorkBuddy
+.workbuddy/
+
+# APK 散件拷贝（release 单独上传，不进 git 历史）
+outputs/
+
+# Logs
+*.log
+logs/
